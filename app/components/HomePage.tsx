@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -11,27 +11,60 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import ArtistCard from './ArtistCard';
-import { fakeArtistData, type Artist } from './data/fakedata';
-
+import ArtistPage from './ArtistPage';
+import { fakeArtistData, fakeConcertData, fakePastEvents, type Artist, type Event } from './data/fakedata';
 const { width, height } = Dimensions.get('window');
 
 const HomePage: React.FC = () => {
   // For now, we'll simulate user not being signed in
-  const isUserSignedIn = false; // Change this to true to show follow buttons
+  const isUserSignedIn = true; // Change this to true to show follow buttons
+  
+  // Navigation state
+  const [selectedArtist, setSelectedArtist] = useState<Artist | null>(null);
 
   const handleSignInPress = (): void => {
     console.log('Sign In pressed!');
   };
 
-  const handleArtistPress = (artist: string): void => {
-    console.log(`Navigate to ${artist} artist page`);
-    // TODO: Navigate to artist page/screen
+  const handleArtistPress = (artist: Artist): void => {
+    console.log(`Navigate to ${artist.name} artist page`);
+    setSelectedArtist(artist);
+  };
+
+  const handleBackPress = (): void => {
+    setSelectedArtist(null);
   };
 
   const handleFollowPress = (artistId: number, isFollowing: boolean): void => {
     console.log(`${isFollowing ? 'Followed' : 'Unfollowed'} artist ID: ${artistId}`);
   };
 
+  // Filter events for the selected artist
+  const getArtistEvents = (artistName: string): Event[] => {
+    return fakeConcertData.filter(event => event.artist === artistName);
+  };
+
+  // Filter past events for the selected artist
+  const getArtistPastEvents = (artistName: string): Event[] => {
+    return fakePastEvents.filter(event => event.artist === artistName);
+  };
+
+  // If an artist is selected, show their page
+  if (selectedArtist) {
+    const artistEvents = getArtistEvents(selectedArtist.name);
+    const artistPastEvents = getArtistPastEvents(selectedArtist.name);
+    
+    return (
+      <ArtistPage
+        artist={selectedArtist}
+        events={artistEvents}
+        pastEvents={artistPastEvents} // Now passing real past events data
+        isUserSignedIn={isUserSignedIn}
+        onBackPress={handleBackPress}
+      />
+    );
+  }
+  // Otherwise, show the homepage
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" />
@@ -83,7 +116,7 @@ const HomePage: React.FC = () => {
                 <ArtistCard
                   key={artist.id}
                   artist={artist}
-                  onPress={() => handleArtistPress(artist.name)}
+                  onPress={() => handleArtistPress(artist)}
                   onFollowPress={handleFollowPress}
                   isUserSignedIn={isUserSignedIn}
                 />

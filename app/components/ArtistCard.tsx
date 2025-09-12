@@ -43,7 +43,6 @@ const ArtistCard: React.FC<ArtistCardProps> = ({
           {/* Left side - Artist Name */}
           <View style={styles.leftContent}>
             <Text style={styles.artistName}>{artist.name}</Text>
-            <Text style={styles.followerCount}>{artist.followers} followers</Text>
           </View>
 
           {/* Right side - Follow Button (only if signed in) */}

@@ -48,16 +48,16 @@ export const fakeConcertData: Event[] = [
     statusColor: "#10B981",
     image: "https://example.com/taylor.jpg"
   },
-  {
-    id: 4,
-    artist: "The Weeknd",
-    date: "Apr 22",
-    venue: "T-Mobile Arena",
-    location: "Las Vegas",
-    status: "Available",
-    statusColor: "#3B82F6",
-    image: "https://example.com/weeknd.jpg"
-  },
+  // {
+  //   id: 4,
+  //   artist: "The Weeknd",
+  //   date: "Apr 22",
+  //   venue: "T-Mobile Arena",
+  //   location: "Las Vegas",
+  //   status: "Available",
+  //   statusColor: "#3B82F6",
+  //   image: "https://example.com/weeknd.jpg"
+  // },
   {
     id: 5,
     artist: "Billie Eilish",
@@ -105,5 +105,39 @@ export const fakeArtistData: Artist[] = [
     followers: "1.9M",
     image: "https://example.com/billie-profile.jpg",
     isFollowing: false
+  }
+  
+];
+
+export const fakePastEvents: Event[] = [
+  {
+    id: 101,
+    artist: "Kendrick Lamar",
+    date: "Jan 20",
+    venue: "MGM Grand",
+    location: "Las Vegas",
+    status: "Attended",
+    statusColor: "#6B7280",
+    image: "https://example.com/kendrick.jpg"
+  },
+  {
+    id: 102,
+    artist: "Taylor Swift",
+    date: "Dec 15",
+    venue: "T-Mobile Arena",
+    location: "Las Vegas",
+    status: "Attended", 
+    statusColor: "#6B7280",
+    image: "https://example.com/taylor.jpg"
+  },
+  {
+    id: 103,
+    artist: "Drake",
+    date: "Nov 8",
+    venue: "Sphere",
+    location: "Las Vegas",
+    status: "Attended",
+    statusColor: "#6B7280", 
+    image: "https://example.com/drake.jpg"
   }
 ];
