@@ -276,13 +276,13 @@ const styles = StyleSheet.create({
     color: 'white',
   },
   contentContainer: {
+    flex: 1,
     backgroundColor: 'rgba(31, 41, 55, 0.9)',
     borderTopLeftRadius: 25,
     borderTopRightRadius: 25,
     paddingTop: 24,
     paddingHorizontal: 20,
     paddingBottom: 50,
-    minHeight: height * 0.4,
   },
   sectionContainer: {
     marginBottom: 30,

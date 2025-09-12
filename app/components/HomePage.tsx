@@ -190,13 +190,13 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   contentContainer: {
+    flex: 1, // Add this line
     backgroundColor: 'rgba(31, 41, 55, 0.9)',
     borderTopLeftRadius: 25,
     borderTopRightRadius: 25,
     paddingTop: 24,
     paddingHorizontal: 20,
     paddingBottom: 50,
-    minHeight: height * 0.6,
   },
   signInButton: {
     backgroundColor: 'rgba(255, 255, 255, 0.15)',
