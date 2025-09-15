@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -8,11 +8,15 @@ import {
   ScrollView,
   Dimensions,
   TouchableOpacity,
+  TextInput,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Ionicons } from '@expo/vector-icons';
 import ArtistCard from './ArtistCard';
 import ArtistPage from './ArtistPage';
+import ArtistSearchPage from './SearchPage'; // Import your search page
 import { fakeArtistData, fakeConcertData, fakePastEvents, type Artist, type Event } from './data/fakedata';
+
 const { width, height } = Dimensions.get('window');
 
 const HomePage: React.FC = () => {
@@ -21,6 +25,12 @@ const HomePage: React.FC = () => {
   
   // Navigation state
   const [selectedArtist, setSelectedArtist] = useState<Artist | null>(null);
+  const [showSearchPage, setShowSearchPage] = useState<boolean>(false);
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [isSearchFocused, setIsSearchFocused] = useState<boolean>(false);
+  
+  // Ref for TextInput to programmatically focus
+  const searchInputRef = useRef<TextInput>(null);
 
   const handleSignInPress = (): void => {
     console.log('Sign In pressed!');
@@ -35,8 +45,19 @@ const HomePage: React.FC = () => {
     setSelectedArtist(null);
   };
 
+  const handleSearchBackPress = (): void => {
+    setShowSearchPage(false);
+    setSearchQuery(''); // Clear search when going back
+  };
+
   const handleFollowPress = (artistId: number, isFollowing: boolean): void => {
     console.log(`${isFollowing ? 'Followed' : 'Unfollowed'} artist ID: ${artistId}`);
+  };
+
+  const handleSearchSubmit = (): void => {
+    if (searchQuery.trim()) {
+      setShowSearchPage(true);
+    }
   };
 
   // Filter events for the selected artist
@@ -48,6 +69,16 @@ const HomePage: React.FC = () => {
   const getArtistPastEvents = (artistName: string): Event[] => {
     return fakePastEvents.filter(event => event.artist === artistName);
   };
+
+  // Show search page if user has searched
+  if (showSearchPage) {
+    return (
+      <ArtistSearchPage 
+        initialSearchQuery={searchQuery}
+        onBackPress={handleSearchBackPress}
+      />
+    );
+  }
 
   // If an artist is selected, show their page
   if (selectedArtist) {
@@ -64,6 +95,7 @@ const HomePage: React.FC = () => {
       />
     );
   }
+
   // Otherwise, show the homepage
   return (
     <SafeAreaView style={styles.container}>
@@ -97,10 +129,34 @@ const HomePage: React.FC = () => {
             <Text style={styles.mainTitle}>favorite artists again</Text>
           </View>
 
-          {/* Search Bar Placeholder */}
+          {/* Interactive Search Bar */}
           <View style={styles.searchContainer}>
-            <View style={styles.searchBar}>
-              <Text style={styles.searchPlaceholder}>Search for Artists</Text>
+            <View 
+              style={[
+                styles.searchBar,
+                isSearchFocused && styles.searchBarFocused
+              ]}
+            >
+              <Ionicons 
+                name="search" 
+                size={20} 
+                color="rgba(255, 255, 255, 0.7)" 
+                style={styles.searchIcon} 
+              />
+              <TextInput
+                ref={searchInputRef}
+                style={styles.searchInput}
+                placeholder="Search for Artists"
+                placeholderTextColor="rgba(255, 255, 255, 0.7)"
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+                onSubmitEditing={handleSearchSubmit}
+                returnKeyType="search"
+                onFocus={() => setIsSearchFocused(true)}
+                onBlur={() => setIsSearchFocused(false)}
+                autoCorrect={false}
+                autoCapitalize="words"
+              />
             </View>
           </View>
 
@@ -184,13 +240,24 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 10,
     elevation: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
   },
-  searchPlaceholder: {
-    color: 'rgba(255, 255, 255, 0.7)',
+  searchBarFocused: {
+    backgroundColor: 'rgba(255, 255, 255, 0.25)',
+    borderColor: 'rgba(255, 255, 255, 0.5)',
+    shadowOpacity: 0.4,
+  },
+  searchIcon: {
+    marginRight: 12,
+  },
+  searchInput: {
+    flex: 1,
+    color: 'white',
     fontSize: 16,
   },
   contentContainer: {
-    flex: 1, // Add this line
+    flex: 1,
     backgroundColor: 'rgba(31, 41, 55, 0.9)',
     borderTopLeftRadius: 25,
     borderTopRightRadius: 25,
