@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, Pressable, ImageBackground } from 'react-native';
 import { type Artist } from './data/fakedata';
+import ArtistFollowButton from './FollowButton';
 
 interface ArtistCardProps {
   artist: Artist;
   onPress?: () => void;
   onFollowPress?: (artistId: number, isFollowing: boolean) => void;
-  isUserSignedIn?: boolean; // New prop to control follow button visibility
+  isUserSignedIn?: boolean; 
 }
 
 const ArtistCard: React.FC<ArtistCardProps> = ({ 
@@ -18,7 +19,7 @@ const ArtistCard: React.FC<ArtistCardProps> = ({
   const [isFollowing, setIsFollowing] = useState(artist.isFollowing);
 
   const handleFollowPress = (event: any): void => {
-    event.stopPropagation(); // Prevent triggering the card press
+    event.stopPropagation(); 
     const newFollowState = !isFollowing;
     setIsFollowing(newFollowState);
     onFollowPress?.(artist.id, newFollowState);
@@ -49,23 +50,15 @@ const ArtistCard: React.FC<ArtistCardProps> = ({
 
           {/* Right side - Follow Button (only if signed in) */}
           {isUserSignedIn && (
-            <View style={styles.rightContent}>
-              <Pressable 
-                style={({ pressed }) => [
-                  styles.followButton,
-                  isFollowing ? styles.followingButton : styles.notFollowingButton,
-                  pressed && styles.followButtonPressed
-                ]}
-                onPress={handleFollowPress}
-              >
-                <Text style={[
-                  styles.followText,
-                  isFollowing ? styles.followingText : styles.notFollowingText
-                ]}>
-                  {isFollowing ? 'Following' : 'Follow'}
-                </Text>
-              </Pressable>
-            </View>
+            <ArtistFollowButton
+              artistId={artist.id}
+              artistName={artist.name}
+              initialFollowState={artist.isFollowing}
+              onFollowChange={(id, isFollowing) => {
+                // Optional: Handle follow state changes
+                console.log(`Artist ${id} follow state: ${isFollowing}`);
+              }}
+            />
           )}
         </View>
       </ImageBackground>

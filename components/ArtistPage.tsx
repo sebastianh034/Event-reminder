@@ -15,6 +15,8 @@ import EventCard from './EventCard';
 import { type Artist, type Event, fakeConcertData, fakePastEvents } from '../components/data/fakedata';
 import BackButton from './backbutton';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import ArtistFollowButton from './FollowButton';
+
 
 const { width, height } = Dimensions.get('window');
 
@@ -80,22 +82,15 @@ const ArtistPage: React.FC<ArtistPageProps> = ({
                       <View style={styles.bottomRow}>
                         {/* Follow Button - positioned to the bottom right */}
                         {isUserSignedIn && (
-                          <Pressable 
-                            style={({ pressed }) => [
-                              styles.followButtonInline,
-                              isFollowing ? styles.followingButton : styles.notFollowingButton,
-                              pressed && styles.followButtonPressed
-                            ]}
-                            onPress={handleFollowPress}
-                          >
-                            <Text style={[
-                              styles.followText,
-                              isFollowing ? styles.followingText : styles.notFollowingText
-                            ]}>
-                              {isFollowing ? 'Following' : 'Follow'}
-                            </Text>
-                          </Pressable>
-                        )}
+                        <ArtistFollowButton
+                          artistId={artist.id}
+                          artistName={artist.name}
+                          initialFollowState={artist.isFollowing}
+                          onFollowChange={(id, isFollowing) => {
+                            console.log(`Artist ${id} follow state: ${isFollowing}`);
+                          }}
+                        />
+                      )}
                       </View>
                     </View>
                   </ImageBackground>
