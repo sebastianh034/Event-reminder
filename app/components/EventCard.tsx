@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { type Event } from '../components/data/fakedata';
 
 interface EventCardProps {
@@ -26,10 +26,12 @@ const EventCard: React.FC<EventCardProps> = ({ event, onPress }) => {
   const statusStyle = getStatusStyle(event.status);
 
   return (
-    <TouchableOpacity 
-      style={styles.card} 
+    <Pressable 
+      style={({ pressed }) => [
+        styles.card,
+        pressed && styles.cardPressed
+      ]}
       onPress={onPress}
-      activeOpacity={0.8}
     >
       <View style={styles.cardContent}>
         {/* Left side - Artist and Date Info */}
@@ -52,7 +54,7 @@ const EventCard: React.FC<EventCardProps> = ({ event, onPress }) => {
           </View>
         </View>
       </View>
-    </TouchableOpacity>
+    </Pressable>
   );
 };
 
@@ -62,6 +64,10 @@ const styles = StyleSheet.create({
     borderRadius: 15,
     marginBottom: 12,
     overflow: 'hidden',
+  },
+  cardPressed: {
+    backgroundColor: 'rgba(75, 85, 99, 0.8)',
+    transform: [{ scale: 0.98 }],
   },
   cardContent: {
     flexDirection: 'row',

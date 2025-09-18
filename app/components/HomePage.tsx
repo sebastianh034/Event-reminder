@@ -7,7 +7,7 @@ import {
   StatusBar,
   ScrollView,
   Dimensions,
-  TouchableOpacity,
+  Pressable,
   TextInput,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -115,13 +115,15 @@ const HomePage: React.FC = () => {
             {/* Top row with Sign In button */}
             <View style={styles.headerTopRow}>
               <View style={styles.spacer} />
-              <TouchableOpacity 
-                style={styles.signInButton}
+              <Pressable 
+                style={({ pressed }) => [
+                  styles.signInButton,
+                  pressed && styles.signInButtonPressed
+                ]}
                 onPress={handleSignInPress}
-                activeOpacity={0.8}
               >
                 <Text style={styles.signInText}>Sign In</Text>
-              </TouchableOpacity>
+              </Pressable>
             </View>
             
             {/* Title */}
@@ -281,6 +283,11 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 4,
     minWidth: 80,
+  },
+  signInButtonPressed: {
+    backgroundColor: 'rgba(255, 255, 255, 0.25)',
+    opacity: 0.9,
+    transform: [{ scale: 0.98 }],
   },
   signInText: {
     color: 'white',

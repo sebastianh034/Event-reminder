@@ -3,7 +3,7 @@ import {
   View,
   Text,
   TextInput,
-  TouchableOpacity,
+  Pressable,
   ScrollView,
   Image,
   StyleSheet,
@@ -15,19 +15,18 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
-import ArtistPage from './ArtistPage'; // Import your existing ArtistPage
+import ArtistPage from './ArtistPage';
 import { Artist, Event, fakeArtistData, fakeConcertData, fakePastEvents } from './data/fakedata';
+import { 
+  ExtendedArtist, 
+  similarArtists,
+  getArtistGenre,
+  getArtistBio,
+  getMonthlyListeners,
+  getTopTracks
+} from './data/ArtistsFakeData';
 
 const { width } = Dimensions.get('window');
-
-interface ExtendedArtist extends Artist {
-  genre?: string;
-  verified?: boolean;
-  bio?: string;
-  monthlyListeners?: string;
-  topTracks?: string[];
-  upcomingEvents?: Event[];
-}
 
 interface ArtistSearchPageProps {
   initialSearchQuery?: string;
@@ -62,144 +61,6 @@ const ArtistSearchPage: React.FC<ArtistSearchPageProps> = ({
 
   const getArtistPastEvents = (artistName: string): Event[] => {
     return fakePastEvents.filter(event => event.artist === artistName);
-  };
-  function getArtistGenre(name: string): string {
-    const genres: Record<string, string> = {
-      'Kendrick Lamar': 'Hip-Hop, Rap',
-      'Taylor Swift': 'Pop, Country',
-      'Drake': 'Hip-Hop, R&B',
-      'The Weeknd': 'R&B, Pop',
-      'Billie Eilish': 'Pop, Alternative'
-    };
-    return genres[name] || 'Pop';
-  }
-
-  function getArtistBio(name: string): string {
-    const bios: Record<string, string> = {
-      'Kendrick Lamar': 'Pulitzer Prize-winning rapper and songwriter from Compton, California.',
-      'Taylor Swift': 'Grammy-winning singer-songwriter known for narrative songs about her personal life.',
-      'Drake': 'Canadian rapper, singer, and actor from Toronto.',
-      'The Weeknd': 'Canadian singer, songwriter, and record producer from Toronto.',
-      'Billie Eilish': 'American singer-songwriter known for her unique sound and style.'
-    };
-    return bios[name] || 'Popular recording artist.';
-  }
-
-  function getMonthlyListeners(followers: string): string {
-    const num = parseFloat(followers.replace('M', ''));
-    return `${(num * 15).toFixed(1)}M`;
-  }
-
-  function getTopTracks(name: string): string[] {
-    const tracks: Record<string, string[]> = {
-      'Kendrick Lamar': ['HUMBLE.', 'DNA.', 'Swimming Pools'],
-      'Taylor Swift': ['Anti-Hero', 'Lavender Haze', 'Karma'],
-      'Drake': ['God\'s Plan', 'In My Feelings', 'Hotline Bling'],
-      'The Weeknd': ['Blinding Lights', 'The Hills', 'Can\'t Feel My Face'],
-      'Billie Eilish': ['bad guy', 'everything i wanted', 'Happier Than Ever']
-    };
-    return tracks[name] || ['Popular Song 1', 'Popular Song 2', 'Popular Song 3'];
-  }
-
-  // Similar artists recommendations - now as full artist objects
-  const similarArtists: Record<string, ExtendedArtist[]> = {
-    'Taylor Swift': [
-      {
-        id: 101,
-        name: 'Olivia Rodrigo',
-        followers: '3.2M',
-        image: 'https://example.com/olivia.jpg',
-        isFollowing: false,
-        genre: 'Pop, Alternative',
-        verified: true,
-        bio: 'Grammy-winning singer-songwriter known for emotional pop-rock anthems.',
-        monthlyListeners: '48.0M',
-        topTracks: ['drivers license', 'good 4 u', 'vampire'],
-        upcomingEvents: []
-      },
-      {
-        id: 102,
-        name: 'Phoebe Bridgers',
-        followers: '1.8M',
-        image: 'https://example.com/phoebe.jpg',
-        isFollowing: false,
-        genre: 'Indie, Folk',
-        verified: true,
-        bio: 'Indie rock singer-songwriter known for introspective lyrics.',
-        monthlyListeners: '27.0M',
-        topTracks: ['Motion Sickness', 'Kyoto', 'I Know the End'],
-        upcomingEvents: []
-      },
-      {
-        id: 103,
-        name: 'Lorde',
-        followers: '2.9M',
-        image: 'https://example.com/lorde.jpg',
-        isFollowing: false,
-        genre: 'Pop, Alternative',
-        verified: true,
-        bio: 'New Zealand singer-songwriter known for alternative pop music.',
-        monthlyListeners: '35.5M',
-        topTracks: ['Royals', 'Green Light', 'Solar Power'],
-        upcomingEvents: []
-      }
-    ],
-    'Kendrick Lamar': [
-      {
-        id: 104,
-        name: 'J. Cole',
-        followers: '4.1M',
-        image: 'https://example.com/jcole.jpg',
-        isFollowing: false,
-        genre: 'Hip-Hop, Rap',
-        verified: true,
-        bio: 'American rapper, singer, and record producer from North Carolina.',
-        monthlyListeners: '42.3M',
-        topTracks: ['Middle Child', 'No Role Modelz', 'GOMD'],
-        upcomingEvents: []
-      },
-      {
-        id: 105,
-        name: 'Tyler, The Creator',
-        followers: '3.8M',
-        image: 'https://example.com/tyler.jpg',
-        isFollowing: false,
-        genre: 'Hip-Hop, Alternative',
-        verified: true,
-        bio: 'American rapper, singer, and record producer known for unique style.',
-        monthlyListeners: '38.7M',
-        topTracks: ['EARFQUAKE', 'See You Again', 'Yonkers'],
-        upcomingEvents: []
-      }
-    ],
-    'Drake': [
-      {
-        id: 106,
-        name: 'Future',
-        followers: '3.5M',
-        image: 'https://example.com/future.jpg',
-        isFollowing: false,
-        genre: 'Hip-Hop, Trap',
-        verified: true,
-        bio: 'American rapper, singer, and songwriter from Atlanta.',
-        monthlyListeners: '41.2M',
-        topTracks: ['Mask Off', 'Life Is Good', 'Jumpman'],
-        upcomingEvents: []
-      },
-      {
-        id: 107,
-        name: 'Travis Scott',
-        followers: '4.7M',
-        image: 'https://example.com/travis.jpg',
-        isFollowing: false,
-        genre: 'Hip-Hop, Trap',
-        verified: true,
-        bio: 'American rapper, singer, and record producer from Houston.',
-        monthlyListeners: '46.8M',
-        topTracks: ['SICKO MODE', 'goosebumps', 'Antidote'],
-        upcomingEvents: []
-      }
-    ]
   };
 
   const handleSearch = (query: string) => {
@@ -250,8 +111,11 @@ const ArtistSearchPage: React.FC<ArtistSearchPageProps> = ({
   }, [initialSearchQuery]);
 
   const renderArtistCard = ({ item }: { item: ExtendedArtist }) => (
-    <TouchableOpacity
-      style={styles.artistCard}
+    <Pressable
+      style={({ pressed }) => [
+        styles.artistCard,
+        pressed && styles.artistCardPressed
+      ]}
       onPress={() => setSelectedArtist(item)}
     >
       <Image source={{ uri: item.image }} style={styles.artistImage} />
@@ -265,10 +129,11 @@ const ArtistSearchPage: React.FC<ArtistSearchPageProps> = ({
         <Text style={styles.artistGenre}>{item.genre}</Text>
         <Text style={styles.artistFollowers}>{item.followers} followers</Text>
       </View>
-      <TouchableOpacity
-        style={[
+      <Pressable
+        style={({ pressed }) => [
           styles.followButton,
-          followedArtists.has(item.id) && styles.followingButton
+          followedArtists.has(item.id) && styles.followingButton,
+          pressed && styles.followButtonPressed
         ]}
         onPress={() => toggleFollow(item.id)}
       >
@@ -278,32 +143,16 @@ const ArtistSearchPage: React.FC<ArtistSearchPageProps> = ({
         ]}>
           {followedArtists.has(item.id) ? 'Following' : 'Follow'}
         </Text>
-      </TouchableOpacity>
-    </TouchableOpacity>
+      </Pressable>
+    </Pressable>
   );
 
-//   const renderEventCard = ({ item }: { item: Event }) => (
-//     <View style={styles.eventCard}>
-//       <View style={styles.eventInfo}>
-//         <Text style={styles.eventVenue}>{item.venue}</Text>
-//         <Text style={styles.eventLocation}>
-//           <Ionicons name="location-outline" size={14} color="#9CA3AF" />
-//           {' '}{item.location}
-//         </Text>
-//         <Text style={styles.eventDate}>
-//           <Ionicons name="calendar-outline" size={14} color="#9CA3AF" />
-//           {' '}{item.date}
-//         </Text>
-//       </View>
-//       <View style={[styles.eventStatus, { backgroundColor: item.statusColor }]}>
-//         <Text style={styles.eventStatusText}>{item.status}</Text>
-//       </View>
-//     </View>
-//   );
-
   const renderSimilarArtist = ({ item }: { item: ExtendedArtist }) => (
-    <TouchableOpacity
-      style={styles.artistCard}
+    <Pressable
+      style={({ pressed }) => [
+        styles.artistCard,
+        pressed && styles.artistCardPressed
+      ]}
       onPress={() => setSelectedArtist(item)}
     >
       <Image source={{ uri: item.image }} style={styles.artistImage} />
@@ -317,10 +166,11 @@ const ArtistSearchPage: React.FC<ArtistSearchPageProps> = ({
         <Text style={styles.artistGenre}>{item.genre}</Text>
         <Text style={styles.artistFollowers}>{item.followers} followers</Text>
       </View>
-      <TouchableOpacity
-        style={[
+      <Pressable
+        style={({ pressed }) => [
           styles.followButton,
-          followedArtists.has(item.id) && styles.followingButton
+          followedArtists.has(item.id) && styles.followingButton,
+          pressed && styles.followButtonPressed
         ]}
         onPress={() => toggleFollow(item.id)}
       >
@@ -330,8 +180,8 @@ const ArtistSearchPage: React.FC<ArtistSearchPageProps> = ({
         ]}>
           {followedArtists.has(item.id) ? 'Following' : 'Follow'}
         </Text>
-      </TouchableOpacity>
-    </TouchableOpacity>
+      </Pressable>
+    </Pressable>
   );
 
   // Show your existing ArtistPage if an artist is selected
@@ -360,12 +210,15 @@ const ArtistSearchPage: React.FC<ArtistSearchPageProps> = ({
       >
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity
+          <Pressable
+            style={({ pressed }) => [
+              styles.backButton,
+              pressed && styles.backButtonPressed
+            ]}
             onPress={onBackPress}
-            style={styles.backButton}
           >
             <Ionicons name="arrow-back" size={24} color="white" />
-          </TouchableOpacity>
+          </Pressable>
           <Text style={styles.headerTitle}>Search Artists</Text>
           <View style={styles.placeholder} />
         </View>
@@ -472,6 +325,10 @@ const styles = StyleSheet.create({
   backButton: {
     padding: 8,
   },
+  backButtonPressed: {
+    opacity: 0.7,
+    transform: [{ scale: 0.95 }],
+  },
   placeholder: {
     width: 40,
   },
@@ -524,6 +381,10 @@ const styles = StyleSheet.create({
     padding: 16,
     marginBottom: 12,
   },
+  artistCardPressed: {
+    backgroundColor: 'rgba(55, 65, 81, 0.9)',
+    transform: [{ scale: 0.98 }],
+  },
   artistImage: {
     width: 60,
     height: 60,
@@ -564,6 +425,10 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
     borderWidth: 1,
     borderColor: '#3B82F6',
+  },
+  followButtonPressed: {
+    opacity: 0.8,
+    transform: [{ scale: 0.95 }],
   },
   followButtonText: {
     color: 'white',

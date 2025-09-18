@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ImageBackground } from 'react-native';
+import { View, Text, StyleSheet, Pressable, ImageBackground } from 'react-native';
 import { type Artist } from './data/fakedata';
 
 interface ArtistCardProps {
@@ -25,10 +25,12 @@ const ArtistCard: React.FC<ArtistCardProps> = ({
   };
 
   return (
-    <TouchableOpacity 
-      style={styles.card} 
+    <Pressable 
+      style={({ pressed }) => [
+        styles.card,
+        pressed && styles.cardPressed
+      ]}
       onPress={onPress}
-      activeOpacity={0.8}
     >
       <ImageBackground
         source={{ uri: artist.image }}
@@ -48,13 +50,13 @@ const ArtistCard: React.FC<ArtistCardProps> = ({
           {/* Right side - Follow Button (only if signed in) */}
           {isUserSignedIn && (
             <View style={styles.rightContent}>
-              <TouchableOpacity 
-                style={[
-                  styles.followButton, 
-                  isFollowing ? styles.followingButton : styles.notFollowingButton
+              <Pressable 
+                style={({ pressed }) => [
+                  styles.followButton,
+                  isFollowing ? styles.followingButton : styles.notFollowingButton,
+                  pressed && styles.followButtonPressed
                 ]}
                 onPress={handleFollowPress}
-                activeOpacity={0.8}
               >
                 <Text style={[
                   styles.followText,
@@ -62,12 +64,12 @@ const ArtistCard: React.FC<ArtistCardProps> = ({
                 ]}>
                   {isFollowing ? 'Following' : 'Follow'}
                 </Text>
-              </TouchableOpacity>
+              </Pressable>
             </View>
           )}
         </View>
       </ImageBackground>
-    </TouchableOpacity>
+    </Pressable>
   );
 };
 
@@ -77,6 +79,10 @@ const styles = StyleSheet.create({
     borderRadius: 15,
     marginBottom: 12,
     overflow: 'hidden',
+  },
+  cardPressed: {
+    opacity: 0.9,
+    transform: [{ scale: 0.98 }],
   },
   imageBackground: {
     flex: 1,
@@ -129,6 +135,10 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     minWidth: 80,
     alignItems: 'center',
+  },
+  followButtonPressed: {
+    opacity: 0.8,
+    transform: [{ scale: 0.95 }],
   },
   notFollowingButton: {
     backgroundColor: '#3B82F6',

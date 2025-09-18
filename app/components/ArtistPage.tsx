@@ -6,7 +6,7 @@ import {
   SafeAreaView,
   StatusBar,
   ScrollView,
-  TouchableOpacity,
+  Pressable,
   ImageBackground,
   Dimensions,
 } from 'react-native';
@@ -62,13 +62,15 @@ const ArtistPage: React.FC<ArtistPageProps> = ({
           {/* Artist Profile Header */}
           <View style={styles.profileHeader}>
             {/* Back Button */}
-            <TouchableOpacity 
-              style={styles.backButton}
+            <Pressable 
+              style={({ pressed }) => [
+                styles.backButton,
+                pressed && styles.backButtonPressed
+              ]}
               onPress={onBackPress}
-              activeOpacity={0.8}
             >
               <Text style={styles.backButtonText}>←</Text>
-            </TouchableOpacity>
+            </Pressable>
 
             {/* Artist Image/Info */}
             <View style={styles.artistImageContainer}>
@@ -82,15 +84,17 @@ const ArtistPage: React.FC<ArtistPageProps> = ({
                   <View style={styles.artistInfo}>
                     <View style={styles.artistNameRow}>
                       <Text style={styles.artistName}>{artist.name}</Text>
-                      {/* Follow Button - positioned to the right of artist name */}
+                    </View>
+                    <View style={styles.bottomRow}>
+                      {/* Follow Button - positioned to the bottom right */}
                       {isUserSignedIn && (
-                        <TouchableOpacity 
-                          style={[
+                        <Pressable 
+                          style={({ pressed }) => [
                             styles.followButtonInline,
-                            isFollowing ? styles.followingButton : styles.notFollowingButton
+                            isFollowing ? styles.followingButton : styles.notFollowingButton,
+                            pressed && styles.followButtonPressed
                           ]}
                           onPress={handleFollowPress}
-                          activeOpacity={0.8}
                         >
                           <Text style={[
                             styles.followText,
@@ -98,7 +102,7 @@ const ArtistPage: React.FC<ArtistPageProps> = ({
                           ]}>
                             {isFollowing ? 'Following' : 'Follow'}
                           </Text>
-                        </TouchableOpacity>
+                        </Pressable>
                       )}
                     </View>
                   </View>
@@ -108,15 +112,17 @@ const ArtistPage: React.FC<ArtistPageProps> = ({
                   <View style={styles.artistInfo}>
                     <View style={styles.artistNameRow}>
                       <Text style={styles.artistName}>{artist.name}</Text>
-                      {/* Follow Button - positioned to the right of artist name */}
+                    </View>
+                    <View style={styles.bottomRow}>
+                      {/* Follow Button - positioned to the bottom right */}
                       {isUserSignedIn && (
-                        <TouchableOpacity 
-                          style={[
+                        <Pressable 
+                          style={({ pressed }) => [
                             styles.followButtonInline,
-                            isFollowing ? styles.followingButton : styles.notFollowingButton
+                            isFollowing ? styles.followingButton : styles.notFollowingButton,
+                            pressed && styles.followButtonPressed
                           ]}
                           onPress={handleFollowPress}
-                          activeOpacity={0.8}
                         >
                           <Text style={[
                             styles.followText,
@@ -124,10 +130,9 @@ const ArtistPage: React.FC<ArtistPageProps> = ({
                           ]}>
                             {isFollowing ? 'Following' : 'Follow'}
                           </Text>
-                        </TouchableOpacity>
+                        </Pressable>
                       )}
                     </View>
-                    <Text style={styles.locationInfo}>Location • Radius: 500 Miles</Text>
                   </View>
                 </View>
               )}
@@ -203,6 +208,10 @@ const styles = StyleSheet.create({
     padding: 8,
     marginBottom: 20,
   },
+  backButtonPressed: {
+    opacity: 0.7,
+    transform: [{ scale: 0.95 }],
+  },
   backButtonText: {
     color: 'white',
     fontSize: 24,
@@ -226,12 +235,19 @@ const styles = StyleSheet.create({
   },
   artistInfo: {
     padding: 20,
+    justifyContent: 'space-between',
+    height: '100%',
   },
   artistNameRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    justifyContent: 'flex-start',
+    alignItems: 'flex-start',
     marginBottom: 4,
+  },
+  bottomRow: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    alignItems: 'flex-end',
   },
   artistName: {
     fontSize: 28,
@@ -256,6 +272,10 @@ const styles = StyleSheet.create({
     minWidth: 80,
     alignItems: 'center',
     marginLeft: 12,
+  },
+  followButtonPressed: {
+    opacity: 0.8,
+    transform: [{ scale: 0.95 }],
   },
   notFollowingButton: {
     backgroundColor: '#3B82F6',
