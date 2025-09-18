@@ -15,7 +15,7 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
-import ArtistPage from './ArtistPage';
+import { router, useLocalSearchParams } from 'expo-router';
 import { Artist, Event, fakeArtistData, fakeConcertData, fakePastEvents } from './data/fakedata';
 import { 
   ExtendedArtist, 
@@ -24,26 +24,20 @@ import {
   getArtistBio,
   getMonthlyListeners,
   getTopTracks
-} from './data/ArtistsFakeData';
+} from './data/ArtistsFakeData'; 
 
 const { width } = Dimensions.get('window');
 
-interface ArtistSearchPageProps {
-  initialSearchQuery?: string;
-  onBackPress?: () => void;
-}
+const ArtistSearchPage: React.FC = () => {
+  // Get search params from the URL
+  const { query } = useLocalSearchParams();
+  const initialQuery = typeof query === 'string' ? query : '';
 
-const ArtistSearchPage: React.FC<ArtistSearchPageProps> = ({ 
-  initialSearchQuery = '', 
-  onBackPress 
-}) => {
-  const [searchQuery, setSearchQuery] = useState<string>(initialSearchQuery);
+  const [searchQuery, setSearchQuery] = useState<string>(initialQuery);
   const [searchResults, setSearchResults] = useState<ExtendedArtist[]>([]);
-  const [selectedArtist, setSelectedArtist] = useState<ExtendedArtist | null>(null);
   const [isSearching, setIsSearching] = useState<boolean>(false);
-  const [followedArtists, setFollowedArtists] = useState<Set<number>>(new Set([2, 4])); // Taylor Swift and The Weeknd
+  const [followedArtists, setFollowedArtists] = useState<Set<number>>(new Set([2, 4]));
 
-  // Extended artist data with additional details for profiles
   const extendedArtistData: ExtendedArtist[] = fakeArtistData.map(artist => ({
     ...artist,
     genre: getArtistGenre(artist.name),
@@ -53,15 +47,6 @@ const ArtistSearchPage: React.FC<ArtistSearchPageProps> = ({
     topTracks: getTopTracks(artist.name),
     upcomingEvents: fakeConcertData.filter(event => event.artist === artist.name)
   }));
-
-  // Helper functions to get artist events
-  const getArtistEvents = (artistName: string): Event[] => {
-    return fakeConcertData.filter(event => event.artist === artistName);
-  };
-
-  const getArtistPastEvents = (artistName: string): Event[] => {
-    return fakePastEvents.filter(event => event.artist === artistName);
-  };
 
   const handleSearch = (query: string) => {
     if (!query.trim()) {
@@ -94,7 +79,10 @@ const ArtistSearchPage: React.FC<ArtistSearchPageProps> = ({
     return extendedArtistData.slice(0, 4);
   };
 
-  // Search when query changes or when component mounts with initial query
+  const handleArtistPress = (artist: ExtendedArtist) => {
+    router.push(`/artist/${artist.id}`);
+  };
+
   useEffect(() => {
     const delayedSearch = setTimeout(() => {
       handleSearch(searchQuery);
@@ -103,12 +91,11 @@ const ArtistSearchPage: React.FC<ArtistSearchPageProps> = ({
     return () => clearTimeout(delayedSearch);
   }, [searchQuery]);
 
-  // Handle initial search query
   useEffect(() => {
-    if (initialSearchQuery) {
-      handleSearch(initialSearchQuery);
+    if (initialQuery) {
+      handleSearch(initialQuery);
     }
-  }, [initialSearchQuery]);
+  }, [initialQuery]);
 
   const renderArtistCard = ({ item }: { item: ExtendedArtist }) => (
     <Pressable
@@ -116,7 +103,7 @@ const ArtistSearchPage: React.FC<ArtistSearchPageProps> = ({
         styles.artistCard,
         pressed && styles.artistCardPressed
       ]}
-      onPress={() => setSelectedArtist(item)}
+      onPress={() => handleArtistPress(item)}
     >
       <Image source={{ uri: item.image }} style={styles.artistImage} />
       <View style={styles.artistInfo}>
@@ -135,7 +122,10 @@ const ArtistSearchPage: React.FC<ArtistSearchPageProps> = ({
           followedArtists.has(item.id) && styles.followingButton,
           pressed && styles.followButtonPressed
         ]}
-        onPress={() => toggleFollow(item.id)}
+        onPress={(e) => {
+          e.stopPropagation(); // Fixed: prevent navigation when follow is pressed
+          toggleFollow(item.id);
+        }}
       >
         <Text style={[
           styles.followButtonText,
@@ -153,7 +143,7 @@ const ArtistSearchPage: React.FC<ArtistSearchPageProps> = ({
         styles.artistCard,
         pressed && styles.artistCardPressed
       ]}
-      onPress={() => setSelectedArtist(item)}
+      onPress={() => handleArtistPress(item)}
     >
       <Image source={{ uri: item.image }} style={styles.artistImage} />
       <View style={styles.artistInfo}>
@@ -172,7 +162,10 @@ const ArtistSearchPage: React.FC<ArtistSearchPageProps> = ({
           followedArtists.has(item.id) && styles.followingButton,
           pressed && styles.followButtonPressed
         ]}
-        onPress={() => toggleFollow(item.id)}
+        onPress={(e) => {
+          e.stopPropagation(); // Fixed: prevent navigation when follow is pressed
+          toggleFollow(item.id);
+        }}
       >
         <Text style={[
           styles.followButtonText,
@@ -183,22 +176,6 @@ const ArtistSearchPage: React.FC<ArtistSearchPageProps> = ({
       </Pressable>
     </Pressable>
   );
-
-  // Show your existing ArtistPage if an artist is selected
-  if (selectedArtist) {
-    const artistEvents = getArtistEvents(selectedArtist.name);
-    const artistPastEvents = getArtistPastEvents(selectedArtist.name);
-    
-    return (
-      <ArtistPage
-        artist={selectedArtist}
-        events={artistEvents}
-        pastEvents={artistPastEvents}
-        isUserSignedIn={true}
-        onBackPress={() => setSelectedArtist(null)}
-      />
-    );
-  }
 
   // Main Search View
   return (
@@ -215,7 +192,7 @@ const ArtistSearchPage: React.FC<ArtistSearchPageProps> = ({
               styles.backButton,
               pressed && styles.backButtonPressed
             ]}
-            onPress={onBackPress}
+            onPress={() => router.back()}
           >
             <Ionicons name="arrow-back" size={24} color="white" />
           </Pressable>
@@ -233,7 +210,7 @@ const ArtistSearchPage: React.FC<ArtistSearchPageProps> = ({
               placeholderTextColor="#9CA3AF"
               value={searchQuery}
               onChangeText={setSearchQuery}
-              autoFocus={!!initialSearchQuery}
+              autoFocus={!!initialQuery}
             />
             {isSearching && (
               <ActivityIndicator size="small" color="#9CA3AF" style={styles.loadingIcon} />

@@ -3,8 +3,7 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
-  StatusBar,
+  StatusBar, 
   ScrollView,
   Dimensions,
   Pressable,
@@ -12,20 +11,17 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
 import ArtistCard from './ArtistCard';
-import ArtistPage from './ArtistPage';
-import ArtistSearchPage from './SearchPage'; // Import your search page
-import { fakeArtistData, fakeConcertData, fakePastEvents, type Artist, type Event } from './data/fakedata';
-
+import { fakeArtistData, type Artist } from './data/fakedata';
+import { SafeAreaView } from 'react-native-safe-area-context'; // Keep only this one
 const { width, height } = Dimensions.get('window');
 
 const HomePage: React.FC = () => {
-  // For now, we'll simulate user not being signed in
-  const isUserSignedIn = true; // Change this to true to show follow buttons
+  // For now, we'll simulate user being signed in
+  const isUserSignedIn = true;
   
-  // Navigation state
-  const [selectedArtist, setSelectedArtist] = useState<Artist | null>(null);
-  const [showSearchPage, setShowSearchPage] = useState<boolean>(false);
+  // Search state (but no navigation state needed anymore)
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [isSearchFocused, setIsSearchFocused] = useState<boolean>(false);
   
@@ -38,16 +34,7 @@ const HomePage: React.FC = () => {
 
   const handleArtistPress = (artist: Artist): void => {
     console.log(`Navigate to ${artist.name} artist page`);
-    setSelectedArtist(artist);
-  };
-
-  const handleBackPress = (): void => {
-    setSelectedArtist(null);
-  };
-
-  const handleSearchBackPress = (): void => {
-    setShowSearchPage(false);
-    setSearchQuery(''); // Clear search when going back
+    router.push(`/artist/${artist.id}`);
   };
 
   const handleFollowPress = (artistId: number, isFollowing: boolean): void => {
@@ -56,58 +43,25 @@ const HomePage: React.FC = () => {
 
   const handleSearchSubmit = (): void => {
     if (searchQuery.trim()) {
-      setShowSearchPage(true);
+      router.push({
+        pathname: '/search',
+        params: { query: searchQuery }
+      });
     }
   };
 
-  // Filter events for the selected artist
-  const getArtistEvents = (artistName: string): Event[] => {
-    return fakeConcertData.filter(event => event.artist === artistName);
-  };
-
-  // Filter past events for the selected artist
-  const getArtistPastEvents = (artistName: string): Event[] => {
-    return fakePastEvents.filter(event => event.artist === artistName);
-  };
-
-  // Show search page if user has searched
-  if (showSearchPage) {
-    return (
-      <ArtistSearchPage 
-        initialSearchQuery={searchQuery}
-        onBackPress={handleSearchBackPress}
-      />
-    );
-  }
-
-  // If an artist is selected, show their page
-  if (selectedArtist) {
-    const artistEvents = getArtistEvents(selectedArtist.name);
-    const artistPastEvents = getArtistPastEvents(selectedArtist.name);
+return (
+  <View style={styles.container}>
+    <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
     
-    return (
-      <ArtistPage
-        artist={selectedArtist}
-        events={artistEvents}
-        pastEvents={artistPastEvents} // Now passing real past events data
-        isUserSignedIn={isUserSignedIn}
-        onBackPress={handleBackPress}
-      />
-    );
-  }
-
-  // Otherwise, show the homepage
-  return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" />
-      
-      {/* Main Background Gradient */}
-      <LinearGradient
-        colors={['#1e3a8a', '#3b82f6', '#1d4ed8']}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={styles.backgroundGradient}
-      >
+    {/* Main Background Gradient */}
+    <LinearGradient
+      colors={['#1e3a8a', '#3b82f6', '#1d4ed8']}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+      style={styles.backgroundGradient}
+    >
+      <SafeAreaView style={styles.safeArea} edges={['top']}>
         <ScrollView style={styles.scrollContainer} showsVerticalScrollIndicator={false}>
           
           {/* Header Section */}
@@ -183,9 +137,10 @@ const HomePage: React.FC = () => {
 
           </View>
         </ScrollView>
-      </LinearGradient>
-    </SafeAreaView>
-  );
+      </SafeAreaView>
+    </LinearGradient>
+  </View>
+);
 };
 
 const styles = StyleSheet.create({
@@ -195,6 +150,10 @@ const styles = StyleSheet.create({
   },
   backgroundGradient: {
     flex: 1,
+  },
+  safeArea: {
+    flex: 1,
+    marginTop:-3,
   },
   scrollContainer: {
     flex: 1,

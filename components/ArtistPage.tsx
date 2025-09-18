@@ -11,27 +11,26 @@ import {
   Dimensions,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { router } from 'expo-router';
 import EventCard from './EventCard';
-import { type Artist, type Event } from '../components/data/fakedata';
+import { type Artist, type Event, fakeConcertData, fakePastEvents } from '../components/data/fakedata';
 
 const { width, height } = Dimensions.get('window');
 
 interface ArtistPageProps {
   artist: Artist;
-  events?: Event[];
-  pastEvents?: Event[];
-  onBackPress?: () => void;
   isUserSignedIn?: boolean;
 }
 
 const ArtistPage: React.FC<ArtistPageProps> = ({
   artist,
-  events = [],
-  pastEvents = [],
-  onBackPress,
-  isUserSignedIn = false,
+  isUserSignedIn = true,
 }) => {
   const [isFollowing, setIsFollowing] = useState(artist.isFollowing);
+
+  // Get events for this artist from the data
+  const events = fakeConcertData.filter(event => event.artist === artist.name);
+  const pastEvents = fakePastEvents.filter(event => event.artist === artist.name);
 
   const handleFollowPress = (): void => {
     setIsFollowing(!isFollowing);
@@ -67,7 +66,7 @@ const ArtistPage: React.FC<ArtistPageProps> = ({
                 styles.backButton,
                 pressed && styles.backButtonPressed
               ]}
-              onPress={onBackPress}
+              onPress={() => router.back()}
             >
               <Text style={styles.backButtonText}>←</Text>
             </Pressable>
