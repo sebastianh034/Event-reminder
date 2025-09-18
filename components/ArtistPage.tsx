@@ -3,7 +3,6 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   StatusBar,
   ScrollView,
   Pressable,
@@ -14,6 +13,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import EventCard from './EventCard';
 import { type Artist, type Event, fakeConcertData, fakePastEvents } from '../components/data/fakedata';
+import BackButton from './backbutton';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const { width, height } = Dimensions.get('window');
 
@@ -47,8 +48,8 @@ const ArtistPage: React.FC<ArtistPageProps> = ({
   const fallbackColor = fallbackColors[artist.id % fallbackColors.length];
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" />
+    <View style={styles.container}>
+      <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
       
       <LinearGradient
         colors={['#1e3a8a', '#3b82f6', '#1d4ed8']}
@@ -56,133 +57,126 @@ const ArtistPage: React.FC<ArtistPageProps> = ({
         end={{ x: 1, y: 1 }}
         style={styles.backgroundGradient}
       >
-        <ScrollView style={styles.scrollContainer} showsVerticalScrollIndicator={false}>
-          
-          {/* Artist Profile Header */}
-          <View style={styles.profileHeader}>
-            {/* Back Button */}
-            <Pressable 
-              style={({ pressed }) => [
-                styles.backButton,
-                pressed && styles.backButtonPressed
-              ]}
-              onPress={() => router.back()}
-            >
-              <Text style={styles.backButtonText}>←</Text>
-            </Pressable>
-
-            {/* Artist Image/Info */}
-            <View style={styles.artistImageContainer}>
-              {artist.image ? (
-                <ImageBackground
-                  source={{ uri: artist.image }}
-                  style={styles.artistImage}
-                  imageStyle={styles.artistImageStyle}
-                >
-                  <View style={styles.artistOverlay} />
-                  <View style={styles.artistInfo}>
-                    <View style={styles.artistNameRow}>
-                      <Text style={styles.artistName}>{artist.name}</Text>
-                    </View>
-                    <View style={styles.bottomRow}>
-                      {/* Follow Button - positioned to the bottom right */}
-                      {isUserSignedIn && (
-                        <Pressable 
-                          style={({ pressed }) => [
-                            styles.followButtonInline,
-                            isFollowing ? styles.followingButton : styles.notFollowingButton,
-                            pressed && styles.followButtonPressed
-                          ]}
-                          onPress={handleFollowPress}
-                        >
-                          <Text style={[
-                            styles.followText,
-                            isFollowing ? styles.followingText : styles.notFollowingText
-                          ]}>
-                            {isFollowing ? 'Following' : 'Follow'}
-                          </Text>
-                        </Pressable>
-                      )}
-                    </View>
-                  </View>
-                </ImageBackground>
-              ) : (
-                <View style={[styles.artistImage, { backgroundColor: fallbackColor }]}>
-                  <View style={styles.artistInfo}>
-                    <View style={styles.artistNameRow}>
-                      <Text style={styles.artistName}>{artist.name}</Text>
-                    </View>
-                    <View style={styles.bottomRow}>
-                      {/* Follow Button - positioned to the bottom right */}
-                      {isUserSignedIn && (
-                        <Pressable 
-                          style={({ pressed }) => [
-                            styles.followButtonInline,
-                            isFollowing ? styles.followingButton : styles.notFollowingButton,
-                            pressed && styles.followButtonPressed
-                          ]}
-                          onPress={handleFollowPress}
-                        >
-                          <Text style={[
-                            styles.followText,
-                            isFollowing ? styles.followingText : styles.notFollowingText
-                          ]}>
-                            {isFollowing ? 'Following' : 'Follow'}
-                          </Text>
-                        </Pressable>
-                      )}
-                    </View>
-                  </View>
-                </View>
-              )}
-            </View>
-          </View>
-
-          {/* Content Container */}
-          <View style={styles.contentContainer}>
+        <SafeAreaView style={styles.safeArea} edges={['top']}>
+          <ScrollView style={styles.scrollContainer} showsVerticalScrollIndicator={false}>
             
-            {/* Events Section */}
-            <View style={styles.sectionContainer}>
-              <Text style={styles.sectionTitle}>Events</Text>
-              
-              {events.length > 0 ? (
-                events.map((event) => (
-                  <EventCard
-                    key={event.id}
-                    event={event}
-                    onPress={() => handleEventPress(event)}
-                  />
-                ))
-              ) : (
-                <View style={styles.noEventsContainer}>
-                  <Text style={styles.noEventsText}>No Future Events</Text>
-                </View>
-              )}
+            {/* Artist Profile Header */}
+            <View style={styles.profileHeader}>
+              <BackButton/>
+
+              {/* Artist Image/Info */}
+              <View style={styles.artistImageContainer}>
+                {artist.image ? (
+                  <ImageBackground
+                    source={{ uri: artist.image }}
+                    style={styles.artistImage}
+                    imageStyle={styles.artistImageStyle}
+                  >
+                    <View style={styles.artistOverlay} />
+                    <View style={styles.artistInfo}>
+                      <View style={styles.artistNameRow}>
+                        <Text style={styles.artistName}>{artist.name}</Text>
+                      </View>
+                      <View style={styles.bottomRow}>
+                        {/* Follow Button - positioned to the bottom right */}
+                        {isUserSignedIn && (
+                          <Pressable 
+                            style={({ pressed }) => [
+                              styles.followButtonInline,
+                              isFollowing ? styles.followingButton : styles.notFollowingButton,
+                              pressed && styles.followButtonPressed
+                            ]}
+                            onPress={handleFollowPress}
+                          >
+                            <Text style={[
+                              styles.followText,
+                              isFollowing ? styles.followingText : styles.notFollowingText
+                            ]}>
+                              {isFollowing ? 'Following' : 'Follow'}
+                            </Text>
+                          </Pressable>
+                        )}
+                      </View>
+                    </View>
+                  </ImageBackground>
+                ) : (
+                  <View style={[styles.artistImage, { backgroundColor: fallbackColor }]}>
+                    <View style={styles.artistInfo}>
+                      <View style={styles.artistNameRow}>
+                        <Text style={styles.artistName}>{artist.name}</Text>
+                      </View>
+                      <View style={styles.bottomRow}>
+                        {/* Follow Button - positioned to the bottom right */}
+                        {isUserSignedIn && (
+                          <Pressable 
+                            style={({ pressed }) => [
+                              styles.followButtonInline,
+                              isFollowing ? styles.followingButton : styles.notFollowingButton,
+                              pressed && styles.followButtonPressed
+                            ]}
+                            onPress={handleFollowPress}
+                          >
+                            <Text style={[
+                              styles.followText,
+                              isFollowing ? styles.followingText : styles.notFollowingText
+                            ]}>
+                              {isFollowing ? 'Following' : 'Follow'}
+                            </Text>
+                          </Pressable>
+                        )}
+                      </View>
+                    </View>
+                  </View>
+                )}
+              </View>
             </View>
 
-            {/* Past Events Section */}
-            <View style={styles.sectionContainer}>
-              <Text style={styles.sectionTitle}>Past Events</Text>
+            {/* Content Container */}
+            <View style={styles.contentContainer}>
               
-              {pastEvents.length > 0 ? (
-                pastEvents.map((event) => (
-                  <EventCard
-                    key={`past-${event.id}`}
-                    event={event}
-                    onPress={() => handleEventPress(event)}
-                  />
-                ))
-              ) : (
-                <View style={styles.noEventsContainer}>
-                  <Text style={styles.noEventsText}>No Past Events</Text>
-                </View>
-              )}
-            </View>
+              {/* Events Section */}
+              <View style={styles.sectionContainer}>
+                <Text style={styles.sectionTitle}>Events</Text>
+                
+                {events.length > 0 ? (
+                  events.map((event) => (
+                    <EventCard
+                      key={event.id}
+                      event={event}
+                      onPress={() => handleEventPress(event)}
+                    />
+                  ))
+                ) : (
+                  <View style={styles.noEventsContainer}>
+                    <Text style={styles.noEventsText}>No Future Events</Text>
+                  </View>
+                )}
+              </View>
 
-          </View>
-        </ScrollView>
+              {/* Past Events Section */}
+              <View style={styles.sectionContainer}>
+                <Text style={styles.sectionTitle}>Past Events</Text>
+                
+                {pastEvents.length > 0 ? (
+                  pastEvents.map((event) => (
+                    <EventCard
+                      key={`past-${event.id}`}
+                      event={event}
+                      onPress={() => handleEventPress(event)}
+                    />
+                  ))
+                ) : (
+                  <View style={styles.noEventsContainer}>
+                    <Text style={styles.noEventsText}>No Past Events</Text>
+                  </View>
+                )}
+              </View>
+
+            </View>
+          </ScrollView>
+        </SafeAreaView>
       </LinearGradient>
-    </SafeAreaView>
+    </View>
   );
 };
 
@@ -197,24 +191,13 @@ const styles = StyleSheet.create({
   scrollContainer: {
     flex: 1,
   },
+  safeArea: {
+    flex: 1,
+  },
   profileHeader: {
     paddingHorizontal: 24,
     paddingTop: 20,
     paddingBottom: 30,
-  },
-  backButton: {
-    alignSelf: 'flex-start',
-    padding: 8,
-    marginBottom: 20,
-  },
-  backButtonPressed: {
-    opacity: 0.7,
-    transform: [{ scale: 0.95 }],
-  },
-  backButtonText: {
-    color: 'white',
-    fontSize: 24,
-    fontWeight: 'bold',
   },
   artistImageContainer: {
     marginBottom: 20,

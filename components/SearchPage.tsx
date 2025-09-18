@@ -7,7 +7,6 @@ import {
   ScrollView,
   Image,
   StyleSheet,
-  SafeAreaView,
   StatusBar,
   ActivityIndicator,
   FlatList,
@@ -25,6 +24,8 @@ import {
   getMonthlyListeners,
   getTopTracks
 } from './data/ArtistsFakeData'; 
+import BackButton from './backbutton';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const { width } = Dimensions.get('window');
 
@@ -123,7 +124,7 @@ const ArtistSearchPage: React.FC = () => {
           pressed && styles.followButtonPressed
         ]}
         onPress={(e) => {
-          e.stopPropagation(); // Fixed: prevent navigation when follow is pressed
+          e.stopPropagation();
           toggleFollow(item.id);
         }}
       >
@@ -163,7 +164,7 @@ const ArtistSearchPage: React.FC = () => {
           pressed && styles.followButtonPressed
         ]}
         onPress={(e) => {
-          e.stopPropagation(); // Fixed: prevent navigation when follow is pressed
+          e.stopPropagation();
           toggleFollow(item.id);
         }}
       >
@@ -177,105 +178,95 @@ const ArtistSearchPage: React.FC = () => {
     </Pressable>
   );
 
-  // Main Search View
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" />
+    <View style={styles.container}>
+      <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
+      
       <LinearGradient
         colors={['#1e3a8a', '#3b82f6', '#1d4ed8']}
         style={styles.gradient}
       >
-        {/* Header */}
-        <View style={styles.header}>
-          <Pressable
-            style={({ pressed }) => [
-              styles.backButton,
-              pressed && styles.backButtonPressed
-            ]}
-            onPress={() => router.back()}
-          >
-            <Ionicons name="arrow-back" size={24} color="white" />
-          </Pressable>
-          <Text style={styles.headerTitle}>Search Artists</Text>
-          <View style={styles.placeholder} />
-        </View>
-
-        {/* Search Bar */}
-        <View style={styles.searchContainer}>
-          <View style={styles.searchBar}>
-            <Ionicons name="search" size={20} color="#9CA3AF" style={styles.searchIcon} />
-            <TextInput
-              style={styles.searchInput}
-              placeholder="Search for Artists"
-              placeholderTextColor="#9CA3AF"
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-              autoFocus={!!initialQuery}
-            />
-            {isSearching && (
-              <ActivityIndicator size="small" color="#9CA3AF" style={styles.loadingIcon} />
-            )}
+        <SafeAreaView style={styles.safeArea} edges={['top']}>
+          {/* Header */}
+          <View style={styles.header}>
+            <BackButton/>
+            <Text style={styles.headerTitle}>Search Artists</Text>
+            <View style={styles.placeholder} />
           </View>
-        </View>
 
-        <ScrollView style={styles.scrollView}>
-          {searchQuery.length > 0 ? (
-            /* Search Results */
-            <View style={styles.resultsContainer}>
-              <Text style={styles.sectionTitle}>
-                {searchResults.length > 0 ? 'Search Results' : 'No Results Found'}
-              </Text>
-              
-              {searchResults.length > 0 && (
-                <FlatList
-                  data={searchResults}
-                  renderItem={renderArtistCard}
-                  keyExtractor={(item) => item.id.toString()}
-                  scrollEnabled={false}
-                />
+          {/* Search Bar */}
+          <View style={styles.searchContainer}>
+            <View style={styles.searchBar}>
+              <Ionicons name="search" size={20} color="#9CA3AF" style={styles.searchIcon} />
+              <TextInput
+                style={styles.searchInput}
+                placeholder="Search for Artists"
+                placeholderTextColor="#9CA3AF"
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+                autoFocus={!!initialQuery}
+              />
+              {isSearching && (
+                <ActivityIndicator size="small" color="#9CA3AF" style={styles.loadingIcon} />
               )}
+            </View>
+          </View>
 
-              {/* Show similar artists if searching for popular artist */}
-              {searchResults.length > 0 && similarArtists[searchResults[0].name] && (
-                <View style={styles.section}>
-                  <Text style={styles.sectionTitle}>Similar Artists</Text>
+          <ScrollView style={styles.scrollView}>
+            {searchQuery.length > 0 ? (
+              <View style={styles.resultsContainer}>
+                <Text style={styles.sectionTitle}>
+                  {searchResults.length > 0 ? 'Search Results' : 'No Results Found'}
+                </Text>
+                
+                {searchResults.length > 0 && (
                   <FlatList
-                    data={similarArtists[searchResults[0].name]}
-                    renderItem={renderSimilarArtist}
-                    keyExtractor={(item) => item.id.toString()}
-                    scrollEnabled={false}
-                  />
-                </View>
-              )}
-
-              {/* Recommended Artists if no results */}
-              {searchResults.length === 0 && (
-                <View style={styles.section}>
-                  <Text style={styles.sectionTitle}>Recommended Artists</Text>
-                  <FlatList
-                    data={getPopularArtists()}
+                    data={searchResults}
                     renderItem={renderArtistCard}
                     keyExtractor={(item) => item.id.toString()}
                     scrollEnabled={false}
                   />
-                </View>
-              )}
-            </View>
-          ) : (
-            /* Popular Artists */
-            <View style={styles.resultsContainer}>
-              <Text style={styles.sectionTitle}>Popular Artists</Text>
-              <FlatList
-                data={getPopularArtists()}
-                renderItem={renderArtistCard}
-                keyExtractor={(item) => item.id.toString()}
-                scrollEnabled={false}
-              />
-            </View>
-          )}
-        </ScrollView>
+                )}
+
+                {searchResults.length > 0 && similarArtists[searchResults[0].name] && (
+                  <View style={styles.section}>
+                    <Text style={styles.sectionTitle}>Similar Artists</Text>
+                    <FlatList
+                      data={similarArtists[searchResults[0].name]}
+                      renderItem={renderSimilarArtist}
+                      keyExtractor={(item) => item.id.toString()}
+                      scrollEnabled={false}
+                    />
+                  </View>
+                )}
+
+                {searchResults.length === 0 && (
+                  <View style={styles.section}>
+                    <Text style={styles.sectionTitle}>Recommended Artists</Text>
+                    <FlatList
+                      data={getPopularArtists()}
+                      renderItem={renderArtistCard}
+                      keyExtractor={(item) => item.id.toString()}
+                      scrollEnabled={false}
+                    />
+                  </View>
+                )}
+              </View>
+            ) : (
+              <View style={styles.resultsContainer}>
+                <Text style={styles.sectionTitle}>Popular Artists</Text>
+                <FlatList
+                  data={getPopularArtists()}
+                  renderItem={renderArtistCard}
+                  keyExtractor={(item) => item.id.toString()}
+                  scrollEnabled={false}
+                />
+              </View>
+            )}
+          </ScrollView>
+        </SafeAreaView>
       </LinearGradient>
-    </SafeAreaView>
+    </View>
   );
 };
 
@@ -284,6 +275,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   gradient: {
+    flex: 1,
+  },
+  safeArea: {
     flex: 1,
   },
   header: {
@@ -298,13 +292,6 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 18,
     fontWeight: '600',
-  },
-  backButton: {
-    padding: 8,
-  },
-  backButtonPressed: {
-    opacity: 0.7,
-    transform: [{ scale: 0.95 }],
   },
   placeholder: {
     width: 40,
