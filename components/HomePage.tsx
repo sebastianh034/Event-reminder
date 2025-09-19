@@ -7,6 +7,7 @@ import {
   ScrollView,
   Dimensions,
   Pressable,
+  Image,
   TextInput,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -14,13 +15,23 @@ import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import ArtistCard from './ArtistCard';
 import { fakeArtistData, type Artist } from './data/fakedata';
-import { SafeAreaView } from 'react-native-safe-area-context'; // Keep only this one
+import { SafeAreaView } from 'react-native-safe-area-context';
 const { width, height } = Dimensions.get('window');
+import { useAuth } from './authcontext';
+import { useFocusEffect } from '@react-navigation/native';
+import { useCallback } from 'react';
+import ProfileHeader from './pfp';
 
 const HomePage: React.FC = () => {
-  // For now, we'll simulate user being signed in
-  const isUserSignedIn = true;
+  // Use auth context instead of simulated state
+  const { isSignedIn, user, signOut, loading } = useAuth();
   
+    useFocusEffect(
+    useCallback(() => {
+      setSearchQuery('');
+    }, [])
+  );
+
   // Search state (but no navigation state needed anymore)
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [isSearchFocused, setIsSearchFocused] = useState<boolean>(false);
@@ -29,7 +40,8 @@ const HomePage: React.FC = () => {
   const searchInputRef = useRef<TextInput>(null);
 
   const handleSignInPress = (): void => {
-    console.log('Sign In pressed!');
+    console.log("pressed");
+    router.push('./signin'); 
   };
 
   const handleArtistPress = (artist: Artist): void => {
@@ -63,27 +75,15 @@ return (
     >
       <SafeAreaView style={styles.safeArea} edges={['top']}>
         <ScrollView style={styles.scrollContainer} showsVerticalScrollIndicator={false}>
+                  
+        {/* Header Section */}
+        <View style={styles.headerSection}>
+          <ProfileHeader onSignInPress={handleSignInPress} />
           
-          {/* Header Section */}
-          <View style={styles.headerSection}>
-            {/* Top row with Sign In button */}
-            <View style={styles.headerTopRow}>
-              <View style={styles.spacer} />
-              <Pressable 
-                style={({ pressed }) => [
-                  styles.signInButton,
-                  pressed && styles.signInButtonPressed
-                ]}
-                onPress={handleSignInPress}
-              >
-                <Text style={styles.signInText}>Sign In</Text>
-              </Pressable>
-            </View>
-            
-            {/* Title */}
-            <Text style={styles.mainTitle}>Never miss your</Text>
-            <Text style={styles.mainTitle}>favorite artists again</Text>
-          </View>
+          {/* Title */}
+          <Text style={styles.mainTitle}>Never miss your</Text>
+          <Text style={styles.mainTitle}>favorite artists again</Text>
+        </View>
 
           {/* Interactive Search Bar */}
           <View style={styles.searchContainer}>
@@ -130,7 +130,7 @@ return (
                   artist={artist}
                   onPress={() => handleArtistPress(artist)}
                   onFollowPress={handleFollowPress}
-                  isUserSignedIn={isUserSignedIn}
+                  isUserSignedIn={isSignedIn}
                 />
               ))}
             </View>
@@ -153,7 +153,7 @@ const styles = StyleSheet.create({
   },
   safeArea: {
     flex: 1,
-    marginTop:-3,
+    marginTop: -3,
   },
   scrollContainer: {
     flex: 1,
@@ -163,16 +163,6 @@ const styles = StyleSheet.create({
     paddingTop: 20,
     paddingBottom: 40,
     alignItems: 'center',
-  },
-  headerTopRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 10,
-    width: '100%',
-  },
-  spacer: {
-    flex: 1,
   },
   mainTitle: {
     fontSize: 32,
@@ -225,34 +215,6 @@ const styles = StyleSheet.create({
     paddingTop: 24,
     paddingHorizontal: 20,
     paddingBottom: 50,
-  },
-  signInButton: {
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.3)',
-    shadowColor: 'rgba(0, 0, 0, 0.1)',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 4,
-    minWidth: 80,
-  },
-  signInButtonPressed: {
-    backgroundColor: 'rgba(255, 255, 255, 0.25)',
-    opacity: 0.9,
-    transform: [{ scale: 0.98 }],
-  },
-  signInText: {
-    color: 'white',
-    fontSize: 14,
-    fontWeight: '600',
-    textAlign: 'center',
   },
   sectionContainer: {
     marginBottom: 30,
