@@ -35,7 +35,7 @@ const SocialLogin: React.FC<SocialLoginProps> = ({
 
       <View style={styles.socialButtons}>
             <Pressable style={styles.socialButton} onPress={handleApplePress}>
-            <AntDesign name="apple1" size={20} color="white" style={styles.socialIcon} />
+            <AntDesign name="apple" size={20} color="white" style={styles.socialIcon} />
             <Text style={styles.socialButtonText}>Apple</Text>
             </Pressable>
         

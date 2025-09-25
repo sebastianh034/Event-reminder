@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { Text, StyleSheet, Pressable } from 'react-native';
+import { PressableStateCallbackType } from "react-native";
+
 
 interface ArtistFollowButtonProps {
   artistId: number;
