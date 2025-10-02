@@ -9,7 +9,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { type Artist } from '../components/data/fakedata';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useAuth } from '../components/authcontext';
+import { useAuth } from '../context/authcontext';
 import { useFocusEffect } from '@react-navigation/native';
 import { useCallback } from 'react';
 import HeaderSection from '../components/HomePage/HeaderSection';

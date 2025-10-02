@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, Pressable, Image, StyleSheet } from 'react-native';
-import { useAuth } from './authcontext';
+import { useAuth } from '../context/authcontext';
 
 interface ProfileHeaderProps {
   onSignInPress: () => void;

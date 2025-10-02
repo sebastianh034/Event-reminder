@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { Stack } from 'expo-router';
 import SignIn from './signin';
-import { AuthProvider } from '../components/authcontext';
+import { AuthProvider } from '../context/authcontext';
 import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
 

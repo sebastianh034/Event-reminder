@@ -5,7 +5,7 @@ import {
   Alert,
 } from 'react-native';
 import { router } from 'expo-router';
-import { useAuth } from '../components/authcontext';
+import { useAuth } from '../context/authcontext';
 import SocialLogin from '../components/SignIn/SocialLogin';
 import AuthForm from '../components/SignIn/Form';
 import GradientBackground from '../components/SignIn/GradientBackground';
