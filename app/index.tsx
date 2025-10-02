@@ -4,6 +4,8 @@ import {
   StyleSheet,
   StatusBar,
   ScrollView,
+  TouchableOpacity,
+  Text,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
@@ -12,6 +14,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../context/authcontext';
 import { useFocusEffect } from '@react-navigation/native';
 import { useCallback } from 'react';
+import * as Notifications from 'expo-notifications';
 import HeaderSection from '../components/HomePage/HeaderSection';
 import SearchBar from '../components/HomePage/SearchBar';
 import ContentContainer from '../components/HomePage/ContentContainer';
@@ -51,6 +54,36 @@ const HomePage: React.FC = () => {
     }
   };
 
+  const testNotification = async (): Promise<void> => {
+    console.log("pressed");
+
+    // Check permissions first
+    const { status } = await Notifications.getPermissionsAsync();
+    console.log("Permission status:", status);
+
+    if (status !== 'granted') {
+      console.log("Permissions not granted, requesting...");
+      const { status: newStatus } = await Notifications.requestPermissionsAsync();
+      console.log("New permission status:", newStatus);
+
+      if (newStatus !== 'granted') {
+        alert('Notification permissions not granted!');
+        return;
+      }
+    }
+
+    console.log("Scheduling notification...");
+    const notificationId = await Notifications.scheduleNotificationAsync({
+      content: {
+        title: "Test Notification 🔔",
+        body: "Your notifications are working!",
+        data: { testData: 'Test data' },
+      },
+      trigger: null, // Send immediately
+    });
+    console.log("Notification scheduled with ID:", notificationId);
+  };
+
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
@@ -70,6 +103,10 @@ const HomePage: React.FC = () => {
               onSearchChange={setSearchQuery}
               onSearchSubmit={handleSearchSubmit}
             />
+
+            <TouchableOpacity style={styles.testButton} onPress={testNotification}>
+              <Text style={styles.testButtonText}>Test Notification</Text>
+            </TouchableOpacity>
 
             <ContentContainer>
               <PopularArtistsSection
@@ -99,6 +136,24 @@ const styles = StyleSheet.create({
   },
   scrollContainer: {
     flex: 1,
+  },
+  testButton: {
+    backgroundColor: '#3b82f6',
+    padding: 15,
+    borderRadius: 10,
+    marginHorizontal: 20,
+    marginVertical: 10,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  testButtonText: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });
 
