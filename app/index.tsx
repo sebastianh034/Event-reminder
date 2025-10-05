@@ -7,15 +7,18 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
-import { type Artist } from '../components/data/fakedata';
+import { type Artist, type Event, getFollowedArtistsEvents } from '../components/data/fakedata';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../context/authcontext';
 import { useFocusEffect } from '@react-navigation/native';
 import { useCallback } from 'react';
+import * as Notifications from 'expo-notifications';
 import HeaderSection from '../components/HomePage/HeaderSection';
 import SearchBar from '../components/HomePage/SearchBar';
 import ContentContainer from '../components/HomePage/ContentContainer';
 import PopularArtistsSection from '../components/HomePage/PopularArtistsSection';
+import SwipeableContent from '../components/HomePage/SwipeableContent';
+import FollowingEventsSection from '../components/HomePage/FollowingEventsSection';
 
 const HomePage: React.FC = () => {
   // Use auth context instead of simulated state
@@ -51,6 +54,20 @@ const HomePage: React.FC = () => {
     }
   };
 
+  const handleEventPress = async (event: Event): Promise<void> => {
+    console.log(`Pressed ${event.artist} event on ${event.date}`);
+
+    // Send notification
+    await Notifications.scheduleNotificationAsync({
+      content: {
+        title: `${event.artist} - ${event.status}`,
+        body: `${event.venue} • ${event.date}\n${event.location}`,
+        data: { eventId: event.id, artist: event.artist },
+      },
+      trigger: null,
+    });
+  };
+
 
   return (
     <View style={styles.container}>
@@ -73,11 +90,25 @@ const HomePage: React.FC = () => {
             />
 
             <ContentContainer>
-              <PopularArtistsSection
-                onArtistPress={handleArtistPress}
-                onFollowPress={handleFollowPress}
-                isUserSignedIn={isSignedIn}
-              />
+              {isSignedIn ? (
+                <SwipeableContent>
+                  <FollowingEventsSection
+                    events={getFollowedArtistsEvents()}
+                    onEventPress={handleEventPress}
+                  />
+                  <PopularArtistsSection
+                    onArtistPress={handleArtistPress}
+                    onFollowPress={handleFollowPress}
+                    isUserSignedIn={isSignedIn}
+                  />
+                </SwipeableContent>
+              ) : (
+                <PopularArtistsSection
+                  onArtistPress={handleArtistPress}
+                  onFollowPress={handleFollowPress}
+                  isUserSignedIn={isSignedIn}
+                />
+              )}
             </ContentContainer>
           </ScrollView>
         </SafeAreaView>

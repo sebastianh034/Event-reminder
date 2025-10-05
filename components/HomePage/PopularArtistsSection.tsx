@@ -37,6 +37,7 @@ const PopularArtistsSection: React.FC<PopularArtistsSectionProps> = ({
 const styles = StyleSheet.create({
   sectionContainer: {
     marginBottom: 30,
+    paddingHorizontal: 20,
   },
   sectionTitle: {
     fontSize: 24,

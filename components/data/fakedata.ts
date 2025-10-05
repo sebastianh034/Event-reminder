@@ -590,3 +590,14 @@ export const fakePastEvents: Event[] = [
     longitude: -95.4107
   }
 ];
+
+// Helper function to get events from followed artists
+export const getFollowedArtistsEvents = (): Event[] => {
+  const followedArtistNames = fakeArtistData
+    .filter(artist => artist.isFollowing)
+    .map(artist => artist.name);
+
+  return fakeConcertData
+    .filter(event => followedArtistNames.includes(event.artist))
+    .slice(0, 10); // Limit to 10 events
+};
