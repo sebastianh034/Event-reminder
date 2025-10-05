@@ -26,7 +26,6 @@ export function usePushNotifications() {
         return;
       }
 
-      // 👇 grab the projectId from app.json -> extra -> eas.projectId
       const projectId =
         Constants?.expoConfig?.extra?.eas?.projectId ?? Constants?.easConfig?.projectId;
 

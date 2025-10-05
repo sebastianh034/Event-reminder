@@ -41,3 +41,6 @@ ios/
 android/
 
 app-example
+
+# Ignore README for now
+README.md

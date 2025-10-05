@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   View,
   StyleSheet,
@@ -13,9 +13,15 @@ import ArtistHeader from '../../components/ArtistPage/ArtistHeader';
 import ContentContainer from '../../components/ArtistPage/ContentContainer';
 import EventsSection from '../../components/ArtistPage/EventsSection';
 import PastEventsSection from '../../components/ArtistPage/PastEventsSection';
+import DistanceFilter from '../../components/ArtistPage/DistanceFilter';
+import { useLocation } from '../../hooks/useLocation';
+import { filterEventsByDistance } from '../../utils/distance';
+import * as Notifications from 'expo-notifications';
 
 export default function ArtistPage() {
   const { id } = useLocalSearchParams();
+  const [maxDistance, setMaxDistance] = useState(100);
+  const { location, permissionGranted, refreshLocation } = useLocation();
 
   const artist = fakeArtistData.find(a => a.id.toString() === id);
 
@@ -23,11 +29,34 @@ export default function ArtistPage() {
     return null;
   }
 
-  const events = fakeConcertData.filter(event => event.artist === artist.name);
-  const pastEvents = fakePastEvents.filter(event => event.artist === artist.name);
+  const allEvents = fakeConcertData.filter(event => event.artist === artist.name);
+  const allPastEvents = fakePastEvents.filter(event => event.artist === artist.name);
 
-  const handleEventPress = (event: Event): void => {
+  // Filter events by distance if location is available
+  const { nearbyEvents, farAwayEvents } = useMemo(() => {
+    if (!location || !permissionGranted) {
+      return { nearbyEvents: allEvents, farAwayEvents: [] };
+    }
+    const nearby = filterEventsByDistance(allEvents, location.latitude, location.longitude, maxDistance);
+    const farAway = allEvents.filter(event => !nearby.includes(event));
+    return { nearbyEvents: nearby, farAwayEvents: farAway };
+  }, [allEvents, location, permissionGranted, maxDistance]);
+
+  // Past events always show all, regardless of distance
+  const pastEvents = allPastEvents;
+
+  const handleEventPress = async (event: Event): Promise<void> => {
     console.log(`Pressed ${event.artist} event on ${event.date}`);
+
+    // Send test notification
+    await Notifications.scheduleNotificationAsync({
+      content: {
+        title: `${event.artist} - ${event.status}`,
+        body: `${event.venue} • ${event.date}\n${event.location}`,
+        data: { eventId: event.id, artist: event.artist },
+      },
+      trigger: null, // Send immediately
+    });
   };
 
   return (
@@ -44,8 +73,32 @@ export default function ArtistPage() {
           <ScrollView style={styles.scrollContainer} showsVerticalScrollIndicator={false}>
             <ArtistHeader artist={artist} isUserSignedIn={true} />
 
+            <DistanceFilter
+              distance={maxDistance}
+              onDistanceChange={setMaxDistance}
+              locationEnabled={permissionGranted}
+              onEnableLocation={refreshLocation}
+            />
+
             <ContentContainer>
-              <EventsSection events={events} onEventPress={handleEventPress} />
+              <EventsSection
+                events={nearbyEvents}
+                onEventPress={handleEventPress}
+                emptyMessage={
+                  allEvents.length === 0
+                    ? 'No Future Events'
+                    : farAwayEvents.length > 0
+                    ? 'No Events Inside Radius'
+                    : 'No Future Events'
+                }
+              />
+              {farAwayEvents.length > 0 && (
+                <EventsSection
+                  events={farAwayEvents}
+                  onEventPress={handleEventPress}
+                  title="Farther Away"
+                />
+              )}
               <PastEventsSection pastEvents={pastEvents} onEventPress={handleEventPress} />
             </ContentContainer>
           </ScrollView>

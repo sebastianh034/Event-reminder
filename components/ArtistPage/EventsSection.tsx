@@ -6,12 +6,19 @@ import { type Event } from '../data/fakedata';
 interface EventsSectionProps {
   events: Event[];
   onEventPress: (event: Event) => void;
+  title?: string;
+  emptyMessage?: string;
 }
 
-const EventsSection: React.FC<EventsSectionProps> = ({ events, onEventPress }) => {
+const EventsSection: React.FC<EventsSectionProps> = ({
+  events,
+  onEventPress,
+  title = 'Events',
+  emptyMessage = 'No Future Events'
+}) => {
   return (
     <View style={styles.sectionContainer}>
-      <Text style={styles.sectionTitle}>Events</Text>
+      <Text style={styles.sectionTitle}>{title}</Text>
 
       {events.length > 0 ? (
         events.map((event) => (
@@ -23,7 +30,7 @@ const EventsSection: React.FC<EventsSectionProps> = ({ events, onEventPress }) =
         ))
       ) : (
         <View style={styles.noEventsContainer}>
-          <Text style={styles.noEventsText}>No Future Events</Text>
+          <Text style={styles.noEventsText}>{emptyMessage}</Text>
         </View>
       )}
     </View>

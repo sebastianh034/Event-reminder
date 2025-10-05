@@ -11,6 +11,7 @@ import AuthForm from '../components/SignIn/Form';
 import GradientBackground from '../components/SignIn/GradientBackground';
 import AuthHeader from '../components/SignIn/AuthHeader';
 import AuthToggle from '../components/SignIn/AuthToggle';
+import { signInWithGoogle } from '../utils/googleAuth';
 
 const SignIn: React.FC = () => {
   const { signIn } = useAuth();
@@ -89,6 +90,44 @@ const SignIn: React.FC = () => {
     });
   };
 
+  const handleGoogleSignIn = async () => {
+    setLoading(true);
+    try {
+      const result = await signInWithGoogle();
+
+      if (result.success && result.user) {
+        const userData = {
+          id: result.user.id,
+          name: result.user.user_metadata?.full_name || result.user.email?.split('@')[0] || 'User',
+          email: result.user.email || '',
+          profilePicture: result.user.user_metadata?.avatar_url || 'https://randomuser.me/api/portraits/men/1.jpg'
+        };
+
+        await signIn(userData);
+        Alert.alert('Success', 'Signed in with Google!', [
+          { text: 'OK', onPress: () => router.back() }
+        ]);
+      } else {
+        Alert.alert('Error', result.error || 'Failed to sign in with Google');
+      }
+    } catch (error) {
+      Alert.alert('Error', 'An unexpected error occurred');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleForgotPassword = () => {
+    console.log('Forgot password pressed');
+    // TODO: When Supabase is configured, use:
+    // await supabase.auth.resetPasswordForEmail(formData.email)
+    Alert.alert(
+      'Reset Password',
+      'Password reset functionality will be enabled once Supabase is configured.',
+      [{ text: 'OK' }]
+    );
+  };
+
   return (
     <GradientBackground>
       <AuthHeader
@@ -103,13 +142,14 @@ const SignIn: React.FC = () => {
           formData={formData}
           onInputChange={handleInputChange}
           onSubmit={handleAuth}
+          onForgotPassword={handleForgotPassword}
         />
 
         <AuthToggle isSignUp={isSignUp} onToggle={toggleMode} />
 
         <SocialLogin
           onApplePress={() => console.log('Apple pressed')}
-          onGooglePress={() => console.log('Google pressed')}
+          onGooglePress={handleGoogleSignIn}
         />
       </View>
     </GradientBackground>

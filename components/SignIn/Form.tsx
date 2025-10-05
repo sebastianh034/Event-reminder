@@ -19,6 +19,7 @@ interface AuthFormProps {
   };
   onInputChange: (field: string, value: string) => void;
   onSubmit: () => void;
+  onForgotPassword?: () => void;
 }
 
 const AuthForm: React.FC<AuthFormProps> = ({
@@ -27,6 +28,7 @@ const AuthForm: React.FC<AuthFormProps> = ({
   formData,
   onInputChange,
   onSubmit,
+  onForgotPassword,
 }) => {
   return (
     <View style={styles.form}>
@@ -106,7 +108,7 @@ const AuthForm: React.FC<AuthFormProps> = ({
       </Pressable>
 
       {!isSignUp && (
-        <Pressable style={styles.forgotPassword}>
+        <Pressable style={styles.forgotPassword} onPress={onForgotPassword}>
           <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
         </Pressable>
       )}
