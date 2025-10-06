@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Modal } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Modal, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Slider from '@react-native-community/slider';
 
@@ -37,20 +37,20 @@ export default function DistanceFilter({
   if (!locationEnabled) {
     return (
       <View style={styles.container}>
-        <TouchableOpacity style={styles.enableButton} onPress={handleEnableLocation}>
+        <Pressable style={styles.enableButton} onPress={handleEnableLocation}>
           <Ionicons name="location-outline" size={20} color="#3B82F6" />
           <Text style={styles.enableButtonText}>Enable Location for Distance Filter</Text>
-        </TouchableOpacity>
+        </Pressable>
       </View>
     );
   }
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity style={styles.filterButton} onPress={() => setModalVisible(true)}>
+      <Pressable style={styles.filterButton} onPress={() => setModalVisible(true)}>
         <Ionicons name="options-outline" size={20} color="#FFFFFF" />
         <Text style={styles.filterButtonText}>Distance: {distance} mi</Text>
-      </TouchableOpacity>
+      </Pressable>
 
       <Modal
         animationType="slide"
