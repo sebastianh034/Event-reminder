@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { type Event } from '../components/data/fakedata';
+import * as Haptics from 'expo-haptics';
 
 interface EventCardProps {
   event: Event;
@@ -8,6 +9,12 @@ interface EventCardProps {
 }
 
 const EventCard: React.FC<EventCardProps> = ({ event, onPress }) => {
+  const handlePress = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    if (onPress) {
+      onPress();
+    }
+  };
   const getStatusStyle = (status: string) => {
     switch (status) {
       case 'Low Stock':
@@ -26,12 +33,12 @@ const EventCard: React.FC<EventCardProps> = ({ event, onPress }) => {
   const statusStyle = getStatusStyle(event.status);
 
   return (
-    <Pressable 
+    <Pressable
       style={({ pressed }) => [
         styles.card,
         pressed && styles.cardPressed
       ]}
-      onPress={onPress}
+      onPress={handlePress}
     >
       <View style={styles.cardContent}>
         {/* Left side - Artist and Date Info */}

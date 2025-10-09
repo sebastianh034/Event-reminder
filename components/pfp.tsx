@@ -1,16 +1,17 @@
 import React from 'react';
 import { View, Text, Pressable, Image, StyleSheet } from 'react-native';
 import { useAuth } from '../context/authcontext';
+import { router } from 'expo-router';
 
 interface ProfileHeaderProps {
   onSignInPress: () => void;
 }
 
 const ProfileHeader: React.FC<ProfileHeaderProps> = ({ onSignInPress }) => {
-  const { isSignedIn, user, signOut } = useAuth();
+  const { isSignedIn, user } = useAuth();
 
   const handleProfilePress = () => {
-    signOut();
+    router.push('/profile');
   };
 
   return (

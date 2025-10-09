@@ -7,6 +7,7 @@ import {
   StyleSheet,
   ActivityIndicator,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 
 interface AuthFormProps {
   isSignUp: boolean;
@@ -20,6 +21,9 @@ interface AuthFormProps {
   onInputChange: (field: string, value: string) => void;
   onSubmit: () => void;
   onForgotPassword?: () => void;
+  onBiometricPress?: () => void;
+  biometricAvailable?: boolean;
+  biometricType?: string;
 }
 
 const AuthForm: React.FC<AuthFormProps> = ({
@@ -29,6 +33,9 @@ const AuthForm: React.FC<AuthFormProps> = ({
   onInputChange,
   onSubmit,
   onForgotPassword,
+  onBiometricPress,
+  biometricAvailable = false,
+  biometricType = 'Biometric',
 }) => {
   return (
     <View style={styles.form}>
@@ -107,6 +114,21 @@ const AuthForm: React.FC<AuthFormProps> = ({
         )}
       </Pressable>
 
+      {!isSignUp && biometricAvailable && (
+        <Pressable
+          style={({ pressed }) => [
+            styles.biometricButton,
+            pressed && styles.biometricButtonPressed
+          ]}
+          onPress={onBiometricPress}
+        >
+          <Ionicons name="finger-print" size={24} color="#ffffff" />
+          <Text style={styles.biometricButtonText}>
+            Sign in with {biometricType}
+          </Text>
+        </Pressable>
+      )}
+
       {!isSignUp && (
         <Pressable style={styles.forgotPassword} onPress={onForgotPassword}>
           <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
@@ -163,6 +185,27 @@ const styles = StyleSheet.create({
   authButtonText: {
     color: '#ffffff',
     fontSize: 16,
+    fontWeight: '600',
+  },
+  biometricButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(59, 130, 246, 0.3)',
+    borderRadius: 12,
+    paddingVertical: 14,
+    marginTop: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(59, 130, 246, 0.5)',
+    gap: 8,
+  },
+  biometricButtonPressed: {
+    opacity: 0.7,
+    transform: [{ scale: 0.98 }],
+  },
+  biometricButtonText: {
+    color: '#ffffff',
+    fontSize: 15,
     fontWeight: '600',
   },
   forgotPassword: {

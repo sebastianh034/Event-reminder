@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Text, StyleSheet, Pressable } from 'react-native';
 import { PressableStateCallbackType } from "react-native";
+import * as Haptics from 'expo-haptics';
 
 
 interface ArtistFollowButtonProps {
@@ -24,11 +25,19 @@ const ArtistFollowButton: React.FC<ArtistFollowButtonProps> = ({
 
   const handlePress = () => {
     const newFollowState = !isFollowing;
+
+    // Success haptic when following, light impact when unfollowing
+    if (newFollowState) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    } else {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+
     setIsFollowing(newFollowState);
-    
+
     // Log the action
     console.log(`${newFollowState ? 'Followed' : 'Unfollowed'} ${artistName}`);
-    
+
     // Call the optional callback
     if (onFollowChange) {
       onFollowChange(artistId, newFollowState);

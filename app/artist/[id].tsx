@@ -14,14 +14,16 @@ import ContentContainer from '../../components/ArtistPage/ContentContainer';
 import EventsSection from '../../components/ArtistPage/EventsSection';
 import PastEventsSection from '../../components/ArtistPage/PastEventsSection';
 import DistanceFilter from '../../components/ArtistPage/DistanceFilter';
-import { useLocation } from '../../hooks/useLocation';
+import { useLocation } from '../../context/locationContext';
 import { filterEventsByDistance } from '../../utils/distance';
 import * as Notifications from 'expo-notifications';
+import { useNotifications } from '../../context/notificationContext';
 
 export default function ArtistPage() {
   const { id } = useLocalSearchParams();
   const [maxDistance, setMaxDistance] = useState(100);
-  const { location, permissionGranted, refreshLocation } = useLocation();
+  const { location, locationEnabled, permissionGranted, refreshLocation } = useLocation();
+  const { notificationsEnabled } = useNotifications();
 
   const artist = fakeArtistData.find(a => a.id.toString() === id);
 
@@ -32,15 +34,15 @@ export default function ArtistPage() {
   const allEvents = fakeConcertData.filter(event => event.artist === artist.name);
   const allPastEvents = fakePastEvents.filter(event => event.artist === artist.name);
 
-  // Filter events by distance if location is available
+  // Filter events by distance if location is available and enabled
   const { nearbyEvents, farAwayEvents } = useMemo(() => {
-    if (!location || !permissionGranted) {
+    if (!location || !permissionGranted || !locationEnabled) {
       return { nearbyEvents: allEvents, farAwayEvents: [] };
     }
     const nearby = filterEventsByDistance(allEvents, location.latitude, location.longitude, maxDistance);
     const farAway = allEvents.filter(event => !nearby.includes(event));
     return { nearbyEvents: nearby, farAwayEvents: farAway };
-  }, [allEvents, location, permissionGranted, maxDistance]);
+  }, [allEvents, location, permissionGranted, locationEnabled, maxDistance]);
 
   // Past events always show all, regardless of distance
   const pastEvents = allPastEvents;
@@ -48,15 +50,21 @@ export default function ArtistPage() {
   const handleEventPress = async (event: Event): Promise<void> => {
     console.log(`Pressed ${event.artist} event on ${event.date}`);
 
-    // Send test notification
-    await Notifications.scheduleNotificationAsync({
-      content: {
-        title: `${event.artist} - ${event.status}`,
-        body: `${event.venue} • ${event.date}\n${event.location}`,
-        data: { eventId: event.id, artist: event.artist },
-      },
-      trigger: null, // Send immediately
-    });
+    // Only send notification if enabled
+    if (notificationsEnabled) {
+      await Notifications.scheduleNotificationAsync({
+        content: {
+          title: `${event.artist} - ${event.status}`,
+          body: `${event.venue} • ${event.date}\n${event.location}`,
+          data: {
+            eventId: event.id,
+            artist: event.artist,
+            artistId: artist.id.toString()
+          },
+        },
+        trigger: null, // Send immediately
+      });
+    }
   };
 
   return (
@@ -76,7 +84,7 @@ export default function ArtistPage() {
             <DistanceFilter
               distance={maxDistance}
               onDistanceChange={setMaxDistance}
-              locationEnabled={permissionGranted}
+              locationEnabled={locationEnabled && permissionGranted}
               onEnableLocation={refreshLocation}
             />
 

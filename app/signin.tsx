@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   StyleSheet,
@@ -12,17 +12,92 @@ import GradientBackground from '../components/SignIn/GradientBackground';
 import AuthHeader from '../components/SignIn/AuthHeader';
 import AuthToggle from '../components/SignIn/AuthToggle';
 import { signInWithGoogle } from '../utils/googleAuth';
+import {
+  checkBiometricAvailability,
+  authenticateWithBiometrics,
+  isBiometricEnabled,
+  getStoredCredentials,
+  enableBiometricAuth,
+  getBiometricTypeName,
+  dismissBiometricPrompt,
+  hasUserDismissedPrompt,
+} from '../utils/biometricAuth';
 
 const SignIn: React.FC = () => {
   const { signIn } = useAuth();
   const [isSignUp, setIsSignUp] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [biometricAvailable, setBiometricAvailable] = useState(false);
+  const [biometricType, setBiometricType] = useState('');
   const [formData, setFormData] = useState({
     email: '',
     password: '',
     confirmPassword: '',
     name: '',
   });
+
+  // Check biometric availability on mount
+  useEffect(() => {
+    checkBiometrics();
+  }, []);
+
+  const checkBiometrics = async () => {
+    const { available, biometricType } = await checkBiometricAvailability();
+    setBiometricAvailable(available);
+    setBiometricType(getBiometricTypeName(biometricType));
+
+    // If biometrics are enabled and available, prompt immediately
+    if (available) {
+      const enabled = await isBiometricEnabled();
+      if (enabled) {
+        promptBiometricAuth();
+      }
+    }
+  };
+
+  const promptBiometricAuth = async () => {
+    const result = await authenticateWithBiometrics();
+
+    if (result.success) {
+      const credentials = await getStoredCredentials();
+
+      if (credentials) {
+        // Auto-fill and sign in
+        setFormData(prev => ({
+          ...prev,
+          email: credentials.email,
+          password: credentials.password,
+        }));
+
+        // Sign in automatically
+        await performSignIn(credentials.email, credentials.password);
+      }
+    }
+  };
+
+  const performSignIn = async (email: string, password: string) => {
+    setLoading(true);
+    try {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      const userData = {
+        id: Math.random().toString(),
+        name: formData.name || email.split('@')[0] || 'User',
+        email: email,
+        profilePicture: 'https://randomuser.me/api/portraits/men/1.jpg'
+      };
+
+      await signIn(userData);
+
+      Alert.alert('Success', 'Signed in successfully!', [
+        { text: 'OK', onPress: () => router.back() }
+      ]);
+    } catch (error) {
+      Alert.alert('Error', 'Something went wrong. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -68,8 +143,37 @@ const SignIn: React.FC = () => {
 
       await signIn(userData);
 
+      // Offer to enable biometric auth after successful sign-in (only if user hasn't dismissed it)
+      if (!isSignUp && biometricAvailable) {
+        const biometricEnabled = await isBiometricEnabled();
+        const userDismissed = await hasUserDismissedPrompt();
+
+        if (!biometricEnabled && !userDismissed) {
+          Alert.alert(
+            `Enable ${biometricType}?`,
+            `Use ${biometricType} to sign in quickly next time?`,
+            [
+              {
+                text: 'Not Now',
+                style: 'cancel',
+                onPress: async () => {
+                  // Mark that user dismissed the prompt
+                  await dismissBiometricPrompt();
+                },
+              },
+              {
+                text: 'Enable',
+                onPress: async () => {
+                  await enableBiometricAuth(formData.email, formData.password);
+                },
+              },
+            ]
+          );
+        }
+      }
+
       Alert.alert(
-        'Success', 
+        'Success',
         isSignUp ? 'Account created successfully!' : 'Signed in successfully!',
         [{ text: 'OK', onPress: () => router.back() }]
       );
@@ -98,9 +202,9 @@ const SignIn: React.FC = () => {
       if (result.success && result.user) {
         const userData = {
           id: result.user.id,
-          name: result.user.user_metadata?.full_name || result.user.email?.split('@')[0] || 'User',
+          name: result.user.name || result.user.email?.split('@')[0] || 'User',
           email: result.user.email || '',
-          profilePicture: result.user.user_metadata?.avatar_url || 'https://randomuser.me/api/portraits/men/1.jpg'
+          profilePicture: result.user.photo || 'https://randomuser.me/api/portraits/men/1.jpg'
         };
 
         await signIn(userData);
@@ -143,6 +247,9 @@ const SignIn: React.FC = () => {
           onInputChange={handleInputChange}
           onSubmit={handleAuth}
           onForgotPassword={handleForgotPassword}
+          onBiometricPress={promptBiometricAuth}
+          biometricAvailable={biometricAvailable}
+          biometricType={biometricType}
         />
 
         <AuthToggle isSignUp={isSignUp} onToggle={toggleMode} />

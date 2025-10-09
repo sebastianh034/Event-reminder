@@ -15,6 +15,7 @@ interface AuthContextType {
   user: User | null;
   signIn: (userData: User) => Promise<void>;
   signOut: () => Promise<void>;
+  updateUser: (userData: Partial<User>) => Promise<void>;
   loading: boolean;
 }
 
@@ -85,14 +86,36 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       // Remove from AsyncStorage
       await AsyncStorage.removeItem(AUTH_STORAGE_KEY);
       await AsyncStorage.removeItem(USER_STORAGE_KEY);
-      
+
       // Update state
       setUser(null);
       setIsSignedIn(false);
-      
+
       console.log('User signed out successfully');
     } catch (error) {
       console.error('Error signing out:', error);
+      throw error;
+    }
+  };
+
+  const updateUser = async (userData: Partial<User>) => {
+    try {
+      if (!user) {
+        throw new Error('No user signed in');
+      }
+
+      // Merge updated data with existing user data
+      const updatedUser = { ...user, ...userData };
+
+      // Save to AsyncStorage
+      await AsyncStorage.setItem(USER_STORAGE_KEY, JSON.stringify(updatedUser));
+
+      // Update state
+      setUser(updatedUser);
+
+      console.log('User updated successfully:', updatedUser.name);
+    } catch (error) {
+      console.error('Error updating user:', error);
       throw error;
     }
   };
@@ -102,6 +125,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     user,
     signIn,
     signOut,
+    updateUser,
     loading,
   };
 

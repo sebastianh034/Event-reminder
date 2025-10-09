@@ -1,6 +1,7 @@
 import React from 'react';
 import { Text, StyleSheet, Pressable } from 'react-native';
 import { router } from 'expo-router';
+import * as Haptics from 'expo-haptics';
 
 interface BackButtonProps {
   onPress?: () => void;
@@ -8,12 +9,14 @@ interface BackButtonProps {
   textStyle?: object;
 }
 
-const BackButton: React.FC<BackButtonProps> = ({ 
-  onPress, 
+const BackButton: React.FC<BackButtonProps> = ({
+  onPress,
   style,
-  textStyle 
+  textStyle
 }) => {
   const handlePress = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+
     if (onPress) {
       onPress();
     } else {

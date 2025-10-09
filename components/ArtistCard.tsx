@@ -2,36 +2,44 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, Pressable, ImageBackground } from 'react-native';
 import { type Artist } from './data/fakedata';
 import ArtistFollowButton from './FollowButton';
+import * as Haptics from 'expo-haptics';
 
 interface ArtistCardProps {
   artist: Artist;
   onPress?: () => void;
   onFollowPress?: (artistId: number, isFollowing: boolean) => void;
-  isUserSignedIn?: boolean; 
+  isUserSignedIn?: boolean;
 }
 
-const ArtistCard: React.FC<ArtistCardProps> = ({ 
-  artist, 
-  onPress, 
-  onFollowPress, 
-  isUserSignedIn = false 
+const ArtistCard: React.FC<ArtistCardProps> = ({
+  artist,
+  onPress,
+  onFollowPress,
+  isUserSignedIn = false
 }) => {
   const [isFollowing, setIsFollowing] = useState(artist.isFollowing);
 
   const handleFollowPress = (event: any): void => {
-    event.stopPropagation(); 
+    event.stopPropagation();
     const newFollowState = !isFollowing;
     setIsFollowing(newFollowState);
     onFollowPress?.(artist.id, newFollowState);
   };
 
+  const handlePress = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    if (onPress) {
+      onPress();
+    }
+  };
+
   return (
-    <Pressable 
+    <Pressable
       style={({ pressed }) => [
         styles.card,
         pressed && styles.cardPressed
       ]}
-      onPress={onPress}
+      onPress={handlePress}
     >
       <ImageBackground
         source={{ uri: artist.image }}

@@ -1,6 +1,7 @@
 export interface Event {
   id: number;
   artist: string;
+  artistId?: number;
   date: string;
   venue: string;
   location: string;
@@ -590,6 +591,11 @@ export const fakePastEvents: Event[] = [
     longitude: -95.4107
   }
 ];
+
+// Helper function to get artist ID from artist name
+export const getArtistIdByName = (artistName: string): number | undefined => {
+  return fakeArtistData.find(artist => artist.name === artistName)?.id;
+};
 
 // Helper function to get events from followed artists
 export const getFollowedArtistsEvents = (): Event[] => {
