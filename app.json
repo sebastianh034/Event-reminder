@@ -16,7 +16,8 @@
           "remote-notification"
         ],
         "NSCameraUsageDescription": "This app needs access to your camera to take profile pictures.",
-        "NSPhotoLibraryUsageDescription": "This app needs access to your photo library to select profile pictures."
+        "NSPhotoLibraryUsageDescription": "This app needs access to your photo library to select profile pictures.",
+        "GIDClientID": "633242984536-koe26oobg8h50df0morl6fpghv9tjij4.apps.googleusercontent.com"
       }
     },
     "android": {
@@ -54,7 +55,13 @@
           "color": "#3B82F6"
         }
       ],
-      "expo-secure-store"
+      "expo-secure-store",
+      [
+        "@react-native-google-signin/google-signin",
+        {
+          "iosUrlScheme": "com.googleusercontent.apps.633242984536-koe26oobg8h50df0morl6fpghv9tjij4"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true
