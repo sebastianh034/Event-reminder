@@ -11,7 +11,8 @@ import AuthForm from '../components/SignIn/Form';
 import GradientBackground from '../components/SignIn/GradientBackground';
 import AuthHeader from '../components/SignIn/AuthHeader';
 import AuthToggle from '../components/SignIn/AuthToggle';
-import { signInWithGoogle } from '../utils/googleAuth';
+import { signInWithGoogle } from '../utils/googleSignIn';
+import { signUpWithEmail, signInWithEmail, resetPassword } from '../utils/supabaseAuth';
 import {
   checkBiometricAvailability,
   authenticateWithBiometrics,
@@ -78,12 +79,19 @@ const SignIn: React.FC = () => {
   const performSignIn = async (email: string, password: string) => {
     setLoading(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Sign in with Supabase
+      const result = await signInWithEmail(email, password);
 
+      if (!result.success || !result.user) {
+        Alert.alert('Error', result.error || 'Failed to sign in');
+        return;
+      }
+
+      // Update local auth context
       const userData = {
-        id: Math.random().toString(),
-        name: formData.name || email.split('@')[0] || 'User',
-        email: email,
+        id: result.user.id,
+        name: result.user.name || email.split('@')[0] || 'User',
+        email: result.user.email,
         profilePicture: 'https://randomuser.me/api/portraits/men/1.jpg'
       };
 
@@ -132,12 +140,26 @@ const SignIn: React.FC = () => {
 
     setLoading(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      let result;
 
+      if (isSignUp) {
+        // Sign up with Supabase
+        result = await signUpWithEmail(formData.email, formData.password, formData.name);
+      } else {
+        // Sign in with Supabase
+        result = await signInWithEmail(formData.email, formData.password);
+      }
+
+      if (!result.success || !result.user) {
+        Alert.alert('Error', result.error || 'Authentication failed');
+        return;
+      }
+
+      // Update local auth context
       const userData = {
-        id: Math.random().toString(),
-        name: formData.name || 'User',
-        email: formData.email,
+        id: result.user.id,
+        name: result.user.name || formData.name || 'User',
+        email: result.user.email,
         profilePicture: 'https://randomuser.me/api/portraits/men/1.jpg'
       };
 
@@ -174,7 +196,7 @@ const SignIn: React.FC = () => {
 
       Alert.alert(
         'Success',
-        isSignUp ? 'Account created successfully!' : 'Signed in successfully!',
+        isSignUp ? 'Account created successfully! Please check your email to verify.' : 'Signed in successfully!',
         [{ text: 'OK', onPress: () => router.back() }]
       );
     } catch (error) {
@@ -199,12 +221,13 @@ const SignIn: React.FC = () => {
     try {
       const result = await signInWithGoogle();
 
-      if (result.success && result.user) {
+      if (result.success && result.userInfo && result.userInfo.data) {
+        const googleUser = result.userInfo.data.user;
         const userData = {
-          id: result.user.id,
-          name: result.user.name || result.user.email?.split('@')[0] || 'User',
-          email: result.user.email || '',
-          profilePicture: result.user.photo || 'https://randomuser.me/api/portraits/men/1.jpg'
+          id: googleUser.id,
+          name: googleUser.name || googleUser.email.split('@')[0] || 'User',
+          email: googleUser.email,
+          profilePicture: googleUser.photo || 'https://randomuser.me/api/portraits/men/1.jpg'
         };
 
         await signIn(userData);
@@ -221,15 +244,23 @@ const SignIn: React.FC = () => {
     }
   };
 
-  const handleForgotPassword = () => {
-    console.log('Forgot password pressed');
-    // TODO: When Supabase is configured, use:
-    // await supabase.auth.resetPasswordForEmail(formData.email)
-    Alert.alert(
-      'Reset Password',
-      'Password reset functionality will be enabled once Supabase is configured.',
-      [{ text: 'OK' }]
-    );
+  const handleForgotPassword = async () => {
+    if (!formData.email) {
+      Alert.alert('Error', 'Please enter your email address first');
+      return;
+    }
+
+    const result = await resetPassword(formData.email);
+
+    if (result.success) {
+      Alert.alert(
+        'Check Your Email',
+        'We sent you a password reset link. Please check your email.',
+        [{ text: 'OK' }]
+      );
+    } else {
+      Alert.alert('Error', result.error || 'Failed to send reset email');
+    }
   };
 
   return (

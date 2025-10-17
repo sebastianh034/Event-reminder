@@ -37,16 +37,6 @@ async function requestPermissions() {
     });
   }
 
-  // // Get push token for remote notifications
-  // try {
-  //   const projectId = '164b1a12-fa07-49f6-9eba-f07651fceb45';
-  //   const tokenData = await Notifications.getExpoPushTokenAsync({ projectId });
-  //   console.log('Expo Push Token:', tokenData.data);
-  //   // You can send this token to your backend to send push notifications
-  // } catch (error) {
-  //   console.error('Failed to get push token:', error);
-  // }
-
   return true;
 }
 
