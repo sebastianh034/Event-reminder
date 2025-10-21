@@ -8,15 +8,15 @@ const ShimmerPlaceholder = createShimmerPlaceholder(LinearGradient);
 export default function EventCardSkeleton() {
   return (
     <View style={styles.container}>
-      <ShimmerPlaceholder style={styles.image} shimmerColors={['#f0f0f0', '#e0e0e0', '#f0f0f0']} />
+      <ShimmerPlaceholder style={styles.image} shimmerColors={['rgba(255, 255, 255, 0.1)', 'rgba(255, 255, 255, 0.2)', 'rgba(255, 255, 255, 0.1)']} />
       <View style={styles.content}>
         <View style={styles.row}>
           <View style={styles.leftContent}>
-            <ShimmerPlaceholder style={styles.title} shimmerColors={['#f0f0f0', '#e0e0e0', '#f0f0f0']} />
-            <ShimmerPlaceholder style={styles.subtitle} shimmerColors={['#f0f0f0', '#e0e0e0', '#f0f0f0']} />
-            <ShimmerPlaceholder style={styles.location} shimmerColors={['#f0f0f0', '#e0e0e0', '#f0f0f0']} />
+            <ShimmerPlaceholder style={styles.title} shimmerColors={['rgba(255, 255, 255, 0.1)', 'rgba(255, 255, 255, 0.2)', 'rgba(255, 255, 255, 0.1)']} />
+            <ShimmerPlaceholder style={styles.subtitle} shimmerColors={['rgba(255, 255, 255, 0.1)', 'rgba(255, 255, 255, 0.2)', 'rgba(255, 255, 255, 0.1)']} />
+            <ShimmerPlaceholder style={styles.location} shimmerColors={['rgba(255, 255, 255, 0.1)', 'rgba(255, 255, 255, 0.2)', 'rgba(255, 255, 255, 0.1)']} />
           </View>
-          <ShimmerPlaceholder style={styles.button} shimmerColors={['#e3f2fd', '#bbdefb', '#e3f2fd']} />
+          <ShimmerPlaceholder style={styles.button} shimmerColors={['rgba(59, 130, 246, 0.3)', 'rgba(59, 130, 246, 0.5)', 'rgba(59, 130, 246, 0.3)']} />
         </View>
       </View>
     </View>
@@ -26,7 +26,7 @@ export default function EventCardSkeleton() {
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
     borderRadius: 16,
     marginBottom: 16,
     overflow: 'hidden',

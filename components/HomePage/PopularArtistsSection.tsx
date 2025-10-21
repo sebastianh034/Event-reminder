@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
   StyleSheet,
 } from 'react-native';
 import ArtistCard from '../ArtistCard';
+import ArtistCardSkeleton from '../skeletons/ArtistCardSkeleton';
 import { fakeArtistData, type Artist } from '../data/fakedata';
 
 interface PopularArtistsSectionProps {
@@ -18,18 +19,39 @@ const PopularArtistsSection: React.FC<PopularArtistsSectionProps> = ({
   onFollowPress,
   isUserSignedIn,
 }) => {
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // Simulate loading delay to test skeleton screen
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 2000); // 2 second delay
+
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
     <View style={styles.sectionContainer}>
       <Text style={styles.sectionTitle}>Popular artists</Text>
-      {fakeArtistData.map((artist: Artist) => (
-        <ArtistCard
-          key={artist.id}
-          artist={artist}
-          onPress={() => onArtistPress(artist)}
-          onFollowPress={onFollowPress}
-          isUserSignedIn={isUserSignedIn}
-        />
-      ))}
+      {isLoading ? (
+        // Show 3 skeleton cards while loading
+        <>
+          <ArtistCardSkeleton />
+          <ArtistCardSkeleton />
+          <ArtistCardSkeleton />
+        </>
+      ) : (
+        // Show actual data after loading
+        fakeArtistData.map((artist: Artist) => (
+          <ArtistCard
+            key={artist.id}
+            artist={artist}
+            onPress={() => onArtistPress(artist)}
+            onFollowPress={onFollowPress}
+            isUserSignedIn={isUserSignedIn}
+          />
+        ))
+      )}
     </View>
   );
 };

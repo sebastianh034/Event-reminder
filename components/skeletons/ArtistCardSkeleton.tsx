@@ -8,10 +8,10 @@ const ShimmerPlaceholder = createShimmerPlaceholder(LinearGradient);
 export default function ArtistCardSkeleton() {
   return (
     <View style={styles.container}>
-      <ShimmerPlaceholder style={styles.image} shimmerColors={['#f0f0f0', '#e0e0e0', '#f0f0f0']} />
+      <ShimmerPlaceholder style={styles.image} shimmerColors={['rgba(255, 255, 255, 0.1)', 'rgba(255, 255, 255, 0.2)', 'rgba(255, 255, 255, 0.1)']} />
       <View style={styles.content}>
-        <ShimmerPlaceholder style={styles.title} shimmerColors={['#f0f0f0', '#e0e0e0', '#f0f0f0']} />
-        <ShimmerPlaceholder style={styles.subtitle} shimmerColors={['#f0f0f0', '#e0e0e0', '#f0f0f0']} />
+        <ShimmerPlaceholder style={styles.title} shimmerColors={['rgba(255, 255, 255, 0.1)', 'rgba(255, 255, 255, 0.2)', 'rgba(255, 255, 255, 0.1)']} />
+        <ShimmerPlaceholder style={styles.subtitle} shimmerColors={['rgba(255, 255, 255, 0.1)', 'rgba(255, 255, 255, 0.2)', 'rgba(255, 255, 255, 0.1)']} />
       </View>
     </View>
   );
@@ -22,7 +22,7 @@ const styles = StyleSheet.create({
     width: 160,
     marginRight: 16,
     borderRadius: 12,
-    backgroundColor: '#fff',
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
     overflow: 'hidden',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
