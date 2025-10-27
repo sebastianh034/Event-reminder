@@ -58,7 +58,7 @@ const ProfilePictureEditor: React.FC<ProfilePictureEditorProps> = ({
     if (Platform.OS === 'ios') {
       ActionSheetIOS.showActionSheetWithOptions(
         {
-          options: ['Cancel', 'Take Photo', 'Choose from Library', 'Use Default'],
+          options: ['Cancel', 'Take Photo', 'Choose from Library'],
           cancelButtonIndex: 0,
         },
         (buttonIndex) => {
@@ -66,8 +66,6 @@ const ProfilePictureEditor: React.FC<ProfilePictureEditorProps> = ({
             takePhoto();
           } else if (buttonIndex === 2) {
             pickImageFromLibrary();
-          } else if (buttonIndex === 3) {
-            onImageChange('https://randomuser.me/api/portraits/men/1.jpg');
           }
         }
       );
@@ -79,10 +77,6 @@ const ProfilePictureEditor: React.FC<ProfilePictureEditorProps> = ({
           { text: 'Cancel', style: 'cancel' },
           { text: 'Take Photo', onPress: takePhoto },
           { text: 'Choose from Library', onPress: pickImageFromLibrary },
-          {
-            text: 'Use Default',
-            onPress: () => onImageChange('https://randomuser.me/api/portraits/men/1.jpg'),
-          },
         ],
         { cancelable: true }
       );
@@ -92,8 +86,9 @@ const ProfilePictureEditor: React.FC<ProfilePictureEditorProps> = ({
   return (
     <View style={styles.container}>
       <Image
-        source={{ uri: profilePicture || 'https://randomuser.me/api/portraits/men/1.jpg' }}
+        source={{ uri: profilePicture || undefined }}
         style={styles.profilePicture}
+        defaultSource={require('../../assets/images/icon.png')}
       />
       <TouchableOpacity
         style={styles.changePictureButton}

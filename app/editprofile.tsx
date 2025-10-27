@@ -5,11 +5,14 @@ import {
   StyleSheet,
   ScrollView,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { useAuth } from '../context/authcontext';
+import { uploadProfilePicture } from '../utils/imageUpload';
+import { updateUserProfile } from '../utils/profileSync';
 import BackButton from '../components/backbutton';
 import ProfilePictureEditor from '../components/EditProfile/ProfilePictureEditor';
 import FormInput from '../components/EditProfile/FormInput';
@@ -21,6 +24,7 @@ export default function EditProfilePage() {
   const [name, setName] = useState(user?.name || '');
   const [email, setEmail] = useState(user?.email || '');
   const [profilePicture, setProfilePicture] = useState(user?.profilePicture || '');
+  const [uploading, setUploading] = useState(false);
 
   const handleSave = async () => {
     if (!name.trim()) {
@@ -40,12 +44,40 @@ export default function EditProfilePage() {
       return;
     }
 
+    if (!user?.id) {
+      Alert.alert('Error', 'User not found');
+      return;
+    }
+
     try {
+      setUploading(true);
+
+      let finalProfilePictureUrl = profilePicture;
+
+      // Check if profile picture changed and is a local file
+      if (profilePicture && profilePicture !== user?.profilePicture && profilePicture.startsWith('file://')) {
+        // Upload the new profile picture
+        const uploadedUrl = await uploadProfilePicture(user.id, profilePicture);
+
+        if (uploadedUrl) {
+          finalProfilePictureUrl = uploadedUrl;
+        } else {
+          Alert.alert('Warning', 'Failed to upload profile picture. Other changes will still be saved.');
+        }
+      }
+
       // Update user in context
       await updateUser({
         name: name.trim(),
         email: email.trim(),
-        profilePicture: profilePicture.trim() || user?.profilePicture,
+        profilePicture: finalProfilePictureUrl || undefined,
+      });
+
+      // Update in database
+      await updateUserProfile(user.id, {
+        name: name.trim(),
+        email: email.trim(),
+        profilePicture: finalProfilePictureUrl || undefined,
       });
 
       Alert.alert('Success', 'Profile updated successfully', [
@@ -55,7 +87,10 @@ export default function EditProfilePage() {
         },
       ]);
     } catch (error) {
+      console.error('Error updating profile:', error);
       Alert.alert('Error', 'Failed to update profile');
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -103,8 +138,22 @@ export default function EditProfilePage() {
                 autoCapitalize="none"
               />
 
+              {/* Upload Indicator */}
+              {uploading && (
+                <View style={styles.uploadingContainer}>
+                  <ActivityIndicator size="small" color="#ffffff" />
+                  <Text style={styles.uploadingText}>Uploading profile picture...</Text>
+                </View>
+              )}
+
               {/* Action Buttons */}
-              <ActionButtons onSave={handleSave} onCancel={handleCancel} />
+              {!uploading ? (
+                <ActionButtons onSave={handleSave} onCancel={handleCancel} />
+              ) : (
+                <View style={styles.uploadingContainer}>
+                  <Text style={styles.uploadingText}>Please wait...</Text>
+                </View>
+              )}
             </View>
           </ScrollView>
         </SafeAreaView>
@@ -138,5 +187,17 @@ const styles = StyleSheet.create({
   formContainer: {
     paddingHorizontal: 20,
     paddingBottom: 40,
+  },
+  uploadingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 16,
+    marginBottom: 16,
+  },
+  uploadingText: {
+    color: '#ffffff',
+    marginLeft: 12,
+    fontSize: 14,
   },
 });

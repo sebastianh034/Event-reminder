@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { setupPushNotifications, removePushTokenFromSupabase } from '../utils/pushNotifications';
+import { supabase } from '../utils/supabase';
 
 // User type definition
 export interface User {
@@ -37,43 +38,106 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const USER_STORAGE_KEY = '@user_data';
   const AUTH_STORAGE_KEY = '@is_signed_in';
 
-  // Load user data from storage on app start
+  // Load user data from storage on app start and sync with Supabase
   useEffect(() => {
     loadUserData();
+
+    // Listen for auth state changes from Supabase
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('Auth state changed:', event, session?.user?.id);
+
+      if (event === 'SIGNED_IN' && session?.user) {
+        // User signed in - update local state
+        const userData: User = {
+          id: session.user.id,
+          email: session.user.email || '',
+          name: session.user.user_metadata?.name || session.user.email?.split('@')[0] || 'User',
+          profilePicture: session.user.user_metadata?.profilePicture
+        };
+        await updateLocalUserData(userData);
+      } else if (event === 'SIGNED_OUT') {
+        // User signed out - clear local state
+        await clearLocalUserData();
+      } else if (event === 'TOKEN_REFRESHED') {
+        console.log('Token refreshed successfully');
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   const loadUserData = async () => {
     try {
       setLoading(true);
-      
-      // Check if user is signed in
-      const isSignedInStored = await AsyncStorage.getItem(AUTH_STORAGE_KEY);
-      const userDataStored = await AsyncStorage.getItem(USER_STORAGE_KEY);
-      
-      if (isSignedInStored === 'true' && userDataStored) {
-        const userData = JSON.parse(userDataStored);
-        setUser(userData);
-        setIsSignedIn(true);
+
+      // First, check if there's an active Supabase session
+      const { data: { session }, error } = await supabase.auth.getSession();
+
+      if (error) {
+        console.error('Error getting session:', error);
+      }
+
+      if (session?.user) {
+        // Active Supabase session found - use it
+        const userData: User = {
+          id: session.user.id,
+          email: session.user.email || '',
+          name: session.user.user_metadata?.name || session.user.email?.split('@')[0] || 'User',
+          profilePicture: session.user.user_metadata?.profilePicture
+        };
+        await updateLocalUserData(userData);
+      } else {
+        // No active session - check local storage as fallback
+        const isSignedInStored = await AsyncStorage.getItem(AUTH_STORAGE_KEY);
+        const userDataStored = await AsyncStorage.getItem(USER_STORAGE_KEY);
+
+        if (isSignedInStored === 'true' && userDataStored) {
+          // Had local data but no Supabase session - clear it
+          console.log('Local session found but no Supabase session - clearing');
+          await clearLocalUserData();
+        } else {
+          // Properly logged out
+          setIsSignedIn(false);
+          setUser(null);
+        }
       }
     } catch (error) {
       console.error('Error loading user data:', error);
       // If there's an error, reset to signed out state
-      setIsSignedIn(false);
-      setUser(null);
+      await clearLocalUserData();
     } finally {
       setLoading(false);
     }
   };
 
-  const signIn = async (userData: User) => {
+  const updateLocalUserData = async (userData: User) => {
     try {
-      // Save to AsyncStorage
       await AsyncStorage.setItem(AUTH_STORAGE_KEY, 'true');
       await AsyncStorage.setItem(USER_STORAGE_KEY, JSON.stringify(userData));
-
-      // Update state
       setUser(userData);
       setIsSignedIn(true);
+    } catch (error) {
+      console.error('Error updating local user data:', error);
+    }
+  };
+
+  const clearLocalUserData = async () => {
+    try {
+      await AsyncStorage.removeItem(AUTH_STORAGE_KEY);
+      await AsyncStorage.removeItem(USER_STORAGE_KEY);
+      setUser(null);
+      setIsSignedIn(false);
+    } catch (error) {
+      console.error('Error clearing local user data:', error);
+    }
+  };
+
+  const signIn = async (userData: User) => {
+    try {
+      // Update local storage and state
+      await updateLocalUserData(userData);
 
       console.log('User signed in successfully:', userData.name);
 
@@ -92,13 +156,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         await removePushTokenFromSupabase(user.id);
       }
 
-      // Remove from AsyncStorage
-      await AsyncStorage.removeItem(AUTH_STORAGE_KEY);
-      await AsyncStorage.removeItem(USER_STORAGE_KEY);
+      // Sign out from Supabase
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error('Supabase sign out error:', error);
+      }
 
-      // Update state
-      setUser(null);
-      setIsSignedIn(false);
+      // Clear local data
+      await clearLocalUserData();
 
       console.log('User signed out successfully');
     } catch (error) {

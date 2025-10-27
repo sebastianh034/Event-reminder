@@ -13,6 +13,7 @@ import AuthHeader from '../components/SignIn/AuthHeader';
 import AuthToggle from '../components/SignIn/AuthToggle';
 import { signInWithGoogle } from '../utils/googleSignIn';
 import { signUpWithEmail, signInWithEmail, resetPassword } from '../utils/supabaseAuth';
+import { syncUserProfile } from '../utils/profileSync';
 import {
   checkBiometricAvailability,
   authenticateWithBiometrics,
@@ -92,10 +93,13 @@ const SignIn: React.FC = () => {
         id: result.user.id,
         name: result.user.name || email.split('@')[0] || 'User',
         email: result.user.email,
-        profilePicture: 'https://randomuser.me/api/portraits/men/1.jpg'
+        profilePicture: undefined
       };
 
       await signIn(userData);
+
+      // Sync profile with Supabase database
+      await syncUserProfile(userData);
 
       Alert.alert('Success', 'Signed in successfully!', [
         { text: 'OK', onPress: () => router.back() }
@@ -160,10 +164,13 @@ const SignIn: React.FC = () => {
         id: result.user.id,
         name: result.user.name || formData.name || 'User',
         email: result.user.email,
-        profilePicture: 'https://randomuser.me/api/portraits/men/1.jpg'
+        profilePicture: undefined
       };
 
       await signIn(userData);
+
+      // Sync profile with Supabase database
+      await syncUserProfile(userData);
 
       // Offer to enable biometric auth after successful sign-in (only if user hasn't dismissed it)
       if (!isSignUp && biometricAvailable) {
@@ -227,10 +234,14 @@ const SignIn: React.FC = () => {
           id: googleUser.id,
           name: googleUser.name || googleUser.email.split('@')[0] || 'User',
           email: googleUser.email,
-          profilePicture: googleUser.photo || 'https://randomuser.me/api/portraits/men/1.jpg'
+          profilePicture: googleUser.photo || undefined
         };
 
         await signIn(userData);
+
+        // Sync profile with Supabase database
+        await syncUserProfile(userData);
+
         Alert.alert('Success', 'Signed in with Google!', [
           { text: 'OK', onPress: () => router.back() }
         ]);
