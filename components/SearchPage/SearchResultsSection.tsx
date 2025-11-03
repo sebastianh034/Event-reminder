@@ -1,18 +1,19 @@
 import React from 'react';
 import {
-  View,
   Text,
   FlatList,
   StyleSheet,
 } from 'react-native';
 import { ExtendedArtist } from '../data/ArtistsFakeData';
 import ArtistResultCard from './ArtistResultCard';
+import ArtistCardSkeleton from '../skeletons/ArtistCardSkeleton';
 
 interface SearchResultsSectionProps {
   searchResults: ExtendedArtist[];
   followedArtists: Set<number>;
   onArtistPress: (artist: ExtendedArtist) => void;
   onToggleFollow: (artistId: number) => void;
+  isSearching?: boolean;
 }
 
 const SearchResultsSection: React.FC<SearchResultsSectionProps> = ({
@@ -20,14 +21,22 @@ const SearchResultsSection: React.FC<SearchResultsSectionProps> = ({
   followedArtists,
   onArtistPress,
   onToggleFollow,
+  isSearching = false,
 }) => {
   return (
     <>
       <Text style={styles.sectionTitle}>
-        {searchResults.length > 0 ? 'Search Results' : 'No Results Found'}
+        {isSearching ? 'Searching...' : searchResults.length > 0 ? 'Search Results' : 'No Results Found'}
       </Text>
 
-      {searchResults.length > 0 && (
+      {isSearching ? (
+        // Show skeleton loaders while searching
+        <>
+          <ArtistCardSkeleton />
+          <ArtistCardSkeleton />
+          <ArtistCardSkeleton />
+        </>
+      ) : searchResults.length > 0 ? (
         <FlatList
           data={searchResults}
           renderItem={({ item }) => (
@@ -41,7 +50,7 @@ const SearchResultsSection: React.FC<SearchResultsSectionProps> = ({
           keyExtractor={(item) => item.id.toString()}
           scrollEnabled={false}
         />
-      )}
+      ) : null}
     </>
   );
 };

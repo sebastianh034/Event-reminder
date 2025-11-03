@@ -1,6 +1,7 @@
 import { Artist, Event } from './fakedata';
 
 export interface ExtendedArtist extends Artist {
+  spotifyId?: string;
   genre?: string;
   verified?: boolean;
   bio?: string;

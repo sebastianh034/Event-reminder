@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { setupPushNotifications, removePushTokenFromSupabase } from '../utils/pushNotifications';
+import { removePushTokenFromSupabase } from '../utils/pushNotifications';
 import { supabase } from '../utils/supabase';
 
 // User type definition
@@ -141,8 +141,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       console.log('User signed in successfully:', userData.name);
 
-      // Register for push notifications
-      await setupPushNotifications(userData.id);
+      // TODO: Re-enable push notifications when testing on physical devices
+      // await setupPushNotifications(userData.id);
     } catch (error) {
       console.error('Error signing in:', error);
       throw error;

@@ -40,11 +40,17 @@ const HomePage: React.FC = () => {
 
   const handleArtistPress = (artist: Artist): void => {
     console.log(`Navigate to ${artist.name} artist page`);
-    router.push(`/artist/${artist.id}`);
-  };
-
-  const handleFollowPress = (artistId: number, isFollowing: boolean): void => {
-    console.log(`${isFollowing ? 'Followed' : 'Unfollowed'} artist ID: ${artistId}`);
+    // Pass artist data through route params
+    router.push({
+      pathname: `/artist/[id]`,
+      params: {
+        id: artist.id.toString(),
+        spotifyId: artist.id.toString(),
+        name: artist.name,
+        image: artist.image,
+        followers: artist.followers,
+      }
+    });
   };
 
   const handleSearchSubmit = (): void => {
@@ -107,14 +113,12 @@ const HomePage: React.FC = () => {
                   />
                   <PopularArtistsSection
                     onArtistPress={handleArtistPress}
-                    onFollowPress={handleFollowPress}
                     isUserSignedIn={isSignedIn}
                   />
                 </SwipeableContent>
               ) : (
                 <PopularArtistsSection
                   onArtistPress={handleArtistPress}
-                  onFollowPress={handleFollowPress}
                   isUserSignedIn={isSignedIn}
                 />
               )}

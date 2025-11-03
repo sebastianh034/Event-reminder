@@ -19,9 +19,9 @@ const SearchResultsContainer: React.FC<SearchResultsContainerProps> = ({ childre
 const styles = StyleSheet.create({
   resultsContainer: {
     backgroundColor: 'rgba(31, 41, 55, 0.9)',
-    marginHorizontal: 20,
-    borderRadius: 24,
-    padding: 20,
+    marginHorizontal: 6,
+    borderRadius: 10,
+    padding: 10,
     marginBottom: 20,
   },
 });

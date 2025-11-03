@@ -4,6 +4,7 @@ import SignIn from './signin';
 import { AuthProvider } from '../context/authcontext';
 import { NotificationProvider } from '../context/notificationContext';
 import { LocationProvider } from '../context/locationContext';
+import { FollowedArtistsProvider } from '../context/followedArtistsContext';
 import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
 import '../Notification-Handler/Notification-Handler';
@@ -77,19 +78,21 @@ export default function RootLayout() {
 
   return (
     <AuthProvider>
-      <NotificationProvider>
-        <LocationProvider>
-          <Stack>
-            <Stack.Screen name="index" options={{ headerShown: false }} />
-            <Stack.Screen name="search" options={{ headerShown: false }} />
-            <Stack.Screen name="artist/[id]" options={{ headerShown: false }} />
-            <Stack.Screen name="signin" options={{ headerShown: false }} />
-            <Stack.Screen name="profile" options={{ headerShown: false }} />
-            <Stack.Screen name="settings" options={{ headerShown: false }} />
-            <Stack.Screen name="editprofile" options={{ headerShown: false }} />
-          </Stack>
-        </LocationProvider>
-      </NotificationProvider>
+      <FollowedArtistsProvider>
+        <NotificationProvider>
+          <LocationProvider>
+            <Stack>
+              <Stack.Screen name="index" options={{ headerShown: false }} />
+              <Stack.Screen name="search" options={{ headerShown: false }} />
+              <Stack.Screen name="artist/[id]" options={{ headerShown: false }} />
+              <Stack.Screen name="signin" options={{ headerShown: false }} />
+              <Stack.Screen name="profile" options={{ headerShown: false }} />
+              <Stack.Screen name="settings" options={{ headerShown: false }} />
+              <Stack.Screen name="editprofile" options={{ headerShown: false }} />
+            </Stack>
+          </LocationProvider>
+        </NotificationProvider>
+      </FollowedArtistsProvider>
     </AuthProvider>
   );
 }

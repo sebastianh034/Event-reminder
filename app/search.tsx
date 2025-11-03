@@ -7,23 +7,13 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router, useLocalSearchParams } from 'expo-router';
-import { fakeArtistData, fakeConcertData } from '../components/data/fakedata';
-import {
-  ExtendedArtist,
-  similarArtists,
-  getArtistGenre,
-  getArtistBio,
-  getMonthlyListeners,
-  getTopTracks
-} from '../components/data/ArtistsFakeData';
+import { searchArtists } from '../utils/spotifyAPI';
+import { ExtendedArtist } from '../components/data/ArtistsFakeData';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import SearchHeader from '../components/SearchPage/SearchHeader';
 import SearchInput from '../components/SearchPage/SearchInput';
 import SearchResultsContainer from '../components/SearchPage/SearchResultsContainer';
 import SearchResultsSection from '../components/SearchPage/SearchResultsSection';
-import SimilarArtistsSection from '../components/SearchPage/SimilarArtistsSection';
-import RecommendedArtistsSection from '../components/SearchPage/RecommendedArtistsSection';
-import PopularArtistsSection from '../components/SearchPage/PopularArtistsSection';
 
 
 const ArtistSearchPage: React.FC = () => {
@@ -34,19 +24,9 @@ const ArtistSearchPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState<string>(initialQuery);
   const [searchResults, setSearchResults] = useState<ExtendedArtist[]>([]);
   const [isSearching, setIsSearching] = useState<boolean>(false);
-  const [followedArtists, setFollowedArtists] = useState<Set<number>>(new Set([2, 4]));
+  const [followedArtists, setFollowedArtists] = useState<Set<number>>(new Set());
 
-  const extendedArtistData: ExtendedArtist[] = fakeArtistData.map(artist => ({
-    ...artist,
-    genre: getArtistGenre(artist.name),
-    verified: true,
-    bio: getArtistBio(artist.name),
-    monthlyListeners: getMonthlyListeners(artist.followers),
-    topTracks: getTopTracks(artist.name),
-    upcomingEvents: fakeConcertData.filter(event => event.artist === artist.name)
-  }));
-
-  const handleSearch = (query: string) => {
+  const handleSearch = async (query: string) => {
     if (!query.trim()) {
       setSearchResults([]);
       return;
@@ -54,13 +34,34 @@ const ArtistSearchPage: React.FC = () => {
 
     setIsSearching(true);
 
-    setTimeout(() => {
-      const results = extendedArtistData.filter(artist =>
-        artist.name.toLowerCase().includes(query.toLowerCase())
-      );
+    try {
+      // Search Spotify for artists
+      const spotifyResults = await searchArtists(query, 10);
+
+      // Convert Spotify artists to ExtendedArtist format
+      const results: ExtendedArtist[] = spotifyResults.map((spotifyArtist, index) => ({
+        id: index + 1000,
+        spotifyId: spotifyArtist.id,
+        name: spotifyArtist.name,
+        genre: spotifyArtist.genres[0] || 'Artist',
+        image: spotifyArtist.images[0]?.url || 'https://via.placeholder.com/300',
+        followers: spotifyArtist.followers.total.toLocaleString(),
+        isFollowing: false,
+        verified: spotifyArtist.popularity > 50,
+        popularity: spotifyArtist.popularity,
+        bio: `${spotifyArtist.name} is a popular artist on Spotify with ${spotifyArtist.followers.total.toLocaleString()} followers.`,
+        monthlyListeners: spotifyArtist.followers.total.toLocaleString(),
+        topTracks: [],
+        upcomingEvents: [],
+      }));
+
       setSearchResults(results);
+    } catch (error) {
+      console.error('Error searching artists:', error);
+      setSearchResults([]);
+    } finally {
       setIsSearching(false);
-    }, 300);
+    }
   };
 
   const toggleFollow = (artistId: number) => {
@@ -73,27 +74,33 @@ const ArtistSearchPage: React.FC = () => {
     setFollowedArtists(newFollowed);
   };
 
-  const getPopularArtists = () => {
-    return extendedArtistData.slice(0, 4);
-  };
-
   const handleArtistPress = (artist: ExtendedArtist) => {
-    router.push(`/artist/${artist.id}`);
+    // Pass artist data through route params
+    router.push({
+      pathname: `/artist/[id]`,
+      params: {
+        id: artist.spotifyId || artist.id.toString(),
+        spotifyId: artist.spotifyId || '',
+        name: artist.name,
+        image: artist.image,
+        genre: artist.genre || '',
+        followers: artist.followers,
+        bio: artist.bio || '',
+        monthlyListeners: artist.monthlyListeners || '',
+      }
+    });
   };
 
-  useEffect(() => {
-    const delayedSearch = setTimeout(() => {
-      handleSearch(searchQuery);
-    }, 300);
-
-    return () => clearTimeout(delayedSearch);
-  }, [searchQuery]);
-
+  // Only search on initial query from URL
   useEffect(() => {
     if (initialQuery) {
       handleSearch(initialQuery);
     }
   }, [initialQuery]);
+
+  const handleSubmitSearch = () => {
+    handleSearch(searchQuery);
+  };
 
 
   return (
@@ -110,48 +117,21 @@ const ArtistSearchPage: React.FC = () => {
           <SearchInput
             searchQuery={searchQuery}
             onSearchChange={setSearchQuery}
+            onSearchSubmit={handleSubmitSearch}
             isSearching={isSearching}
             autoFocus={!!initialQuery}
           />
 
           <ScrollView style={styles.scrollView}>
-            {searchQuery.length > 0 ? (
-              <SearchResultsContainer>
-                <SearchResultsSection
-                  searchResults={searchResults}
-                  followedArtists={followedArtists}
-                  onArtistPress={handleArtistPress}
-                  onToggleFollow={toggleFollow}
-                />
-
-                {searchResults.length > 0 && similarArtists[searchResults[0].name] && (
-                  <SimilarArtistsSection
-                    similarArtists={similarArtists[searchResults[0].name]}
-                    followedArtists={followedArtists}
-                    onArtistPress={handleArtistPress}
-                    onToggleFollow={toggleFollow}
-                  />
-                )}
-
-                {searchResults.length === 0 && (
-                  <RecommendedArtistsSection
-                    artists={getPopularArtists()}
-                    followedArtists={followedArtists}
-                    onArtistPress={handleArtistPress}
-                    onToggleFollow={toggleFollow}
-                  />
-                )}
-              </SearchResultsContainer>
-            ) : (
-              <SearchResultsContainer>
-                <PopularArtistsSection
-                  artists={getPopularArtists()}
-                  followedArtists={followedArtists}
-                  onArtistPress={handleArtistPress}
-                  onToggleFollow={toggleFollow}
-                />
-              </SearchResultsContainer>
-            )}
+            <SearchResultsContainer>
+              <SearchResultsSection
+                searchResults={searchResults}
+                followedArtists={followedArtists}
+                onArtistPress={handleArtistPress}
+                onToggleFollow={toggleFollow}
+                isSearching={isSearching}
+              />
+            </SearchResultsContainer>
           </ScrollView>
         </SafeAreaView>
       </LinearGradient>

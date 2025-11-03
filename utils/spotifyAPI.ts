@@ -1,9 +1,45 @@
-// Spotify API Configuration
-const SPOTIFY_CLIENT_ID = 'YOUR_CLIENT_ID_HERE';
-const SPOTIFY_CLIENT_SECRET = 'YOUR_CLIENT_SECRET_HERE';
+import { supabase } from './supabase';
 
 let accessToken: string | null = null;
 let tokenExpiry: number = 0;
+let cachedCredentials: { clientId: string; clientSecret: string } | null = null;
+
+/**
+ * Get Spotify credentials from Supabase
+ */
+async function getSpotifyCredentials(): Promise<{ clientId: string; clientSecret: string } | null> {
+  // Return cached credentials if available
+  if (cachedCredentials) {
+    return cachedCredentials;
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from('Spotify_config')
+      .select('key, value')
+      .in('key', ['spotify_client_id', 'spotify_client_secret']);
+
+    if (error || !data || data.length === 0) {
+      console.error('Error fetching Spotify credentials:', error);
+      return null;
+    }
+
+    const clientId = data.find(item => item.key === 'spotify_client_id')?.value;
+    const clientSecret = data.find(item => item.key === 'spotify_client_secret')?.value;
+
+    if (!clientId || !clientSecret) {
+      console.error('Spotify credentials not found in database');
+      return null;
+    }
+
+    // Cache the credentials
+    cachedCredentials = { clientId, clientSecret };
+    return cachedCredentials;
+  } catch (error) {
+    console.error('Exception fetching Spotify credentials:', error);
+    return null;
+  }
+}
 
 /**
  * Get Spotify access token using Client Credentials flow
@@ -14,12 +50,19 @@ async function getAccessToken(): Promise<string | null> {
     return accessToken;
   }
 
+  // Get credentials from Supabase
+  const credentials = await getSpotifyCredentials();
+  if (!credentials) {
+    console.error('Unable to fetch Spotify credentials');
+    return null;
+  }
+
   try {
     const response = await fetch('https://accounts.spotify.com/api/token', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
-        'Authorization': 'Basic ' + btoa(`${SPOTIFY_CLIENT_ID}:${SPOTIFY_CLIENT_SECRET}`),
+        'Authorization': 'Basic ' + btoa(`${credentials.clientId}:${credentials.clientSecret}`),
       },
       body: 'grant_type=client_credentials',
     });

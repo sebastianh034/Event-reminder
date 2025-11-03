@@ -8,19 +8,18 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ExtendedArtist } from '../data/ArtistsFakeData';
+import ArtistFollowButton from '../FollowButton';
 
 interface ArtistResultCardProps {
   artist: ExtendedArtist;
   onPress: (artist: ExtendedArtist) => void;
-  onFollowPress: (artistId: number) => void;
-  isFollowed: boolean;
+  onFollowPress?: (artistId: number) => void;
+  isFollowed?: boolean;
 }
 
 const ArtistResultCard: React.FC<ArtistResultCardProps> = ({
   artist,
   onPress,
-  onFollowPress,
-  isFollowed,
 }) => {
   return (
     <Pressable
@@ -41,24 +40,18 @@ const ArtistResultCard: React.FC<ArtistResultCardProps> = ({
         <Text style={styles.artistGenre}>{artist.genre}</Text>
         <Text style={styles.artistFollowers}>{artist.followers} followers</Text>
       </View>
-      <Pressable
-        style={({ pressed }) => [
-          styles.followButton,
-          isFollowed && styles.followingButton,
-          pressed && styles.followButtonPressed
-        ]}
-        onPress={(e) => {
-          e.stopPropagation();
-          onFollowPress(artist.id);
-        }}
-      >
-        <Text style={[
-          styles.followButtonText,
-          isFollowed && styles.followingButtonText
-        ]}>
-          {isFollowed ? 'Following' : 'Follow'}
-        </Text>
-      </Pressable>
+      <ArtistFollowButton
+        artistId={artist.id}
+        artistName={artist.name}
+        spotifyId={artist.spotifyId}
+        genre={artist.genre}
+        imageUrl={artist.image}
+        followersCount={typeof artist.followers === 'string' ? parseInt(artist.followers.replace(/,/g, '')) : undefined}
+        popularity={artist.popularity}
+        bio={artist.bio}
+        initialFollowState={false}
+        size="small"
+      />
     </Pressable>
   );
 };

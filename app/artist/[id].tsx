@@ -7,7 +7,7 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useLocalSearchParams } from 'expo-router';
-import { type Event, fakeArtistData, fakeConcertData, fakePastEvents } from '../../components/data/fakedata';
+import { type Event, fakeConcertData, fakePastEvents } from '../../components/data/fakedata';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import ArtistHeader from '../../components/ArtistPage/ArtistHeader';
 import ContentContainer from '../../components/ArtistPage/ContentContainer';
@@ -20,16 +20,24 @@ import * as Notifications from 'expo-notifications';
 import { useNotifications } from '../../context/notificationContext';
 
 export default function ArtistPage() {
-  const { id } = useLocalSearchParams();
+  const params = useLocalSearchParams();
+  const { id, name, image, followers } = params;
   const [maxDistance, setMaxDistance] = useState(100);
   const { location, locationEnabled, permissionGranted, refreshLocation } = useLocation();
   const { notificationsEnabled } = useNotifications();
 
-  const artist = fakeArtistData.find(a => a.id.toString() === id);
+  // Debug: Log params to see what we're receiving
+  console.log('Artist page params:', { id, name, image, followers });
 
-  if (!artist) {
-    return null;
-  }
+  // Create artist object from Spotify data passed through params
+  const artist = {
+    id: 0, // Temporary numeric ID
+    spotifyId: (id as string) || '',
+    name: (name as string) || 'Unknown Artist',
+    image: (image as string) || 'https://via.placeholder.com/300',
+    followers: (followers as string) || '0',
+    isFollowing: false,
+  };
 
   const allEvents = fakeConcertData.filter(event => event.artist === artist.name);
   const allPastEvents = fakePastEvents.filter(event => event.artist === artist.name);

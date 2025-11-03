@@ -10,6 +10,7 @@ import { Ionicons } from '@expo/vector-icons';
 interface SearchInputProps {
   searchQuery: string;
   onSearchChange: (query: string) => void;
+  onSearchSubmit?: () => void;
   isSearching: boolean;
   autoFocus?: boolean;
 }
@@ -17,6 +18,7 @@ interface SearchInputProps {
 const SearchInput: React.FC<SearchInputProps> = ({
   searchQuery,
   onSearchChange,
+  onSearchSubmit,
   isSearching,
   autoFocus = false,
 }) => {
@@ -30,6 +32,8 @@ const SearchInput: React.FC<SearchInputProps> = ({
           placeholderTextColor="#9CA3AF"
           value={searchQuery}
           onChangeText={onSearchChange}
+          onSubmitEditing={onSearchSubmit}
+          returnKeyType="search"
           autoFocus={autoFocus}
         />
         {isSearching && (

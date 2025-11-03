@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { View, Text, StyleSheet, Pressable, ImageBackground } from 'react-native';
+import { BlurView } from 'expo-blur';
 import { type Artist } from './data/fakedata';
 import ArtistFollowButton from './FollowButton';
 import * as Haptics from 'expo-haptics';
@@ -7,25 +8,14 @@ import * as Haptics from 'expo-haptics';
 interface ArtistCardProps {
   artist: Artist;
   onPress?: () => void;
-  onFollowPress?: (artistId: number, isFollowing: boolean) => void;
   isUserSignedIn?: boolean;
 }
 
 const ArtistCard: React.FC<ArtistCardProps> = ({
   artist,
   onPress,
-  onFollowPress,
   isUserSignedIn = false
 }) => {
-  const [isFollowing, setIsFollowing] = useState(artist.isFollowing);
-
-  const handleFollowPress = (event: any): void => {
-    event.stopPropagation();
-    const newFollowState = !isFollowing;
-    setIsFollowing(newFollowState);
-    onFollowPress?.(artist.id, newFollowState);
-  };
-
   const handlePress = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     if (onPress) {
@@ -46,29 +36,35 @@ const ArtistCard: React.FC<ArtistCardProps> = ({
         style={styles.imageBackground}
         imageStyle={styles.backgroundImage}
       >
-        {/* Dark overlay for text readability */}
-        <View style={styles.overlay} />
-        
-        {/* Content Container */}
-        <View style={styles.cardContent}>
-          {/* Left side - Artist Name */}
-          <View style={styles.leftContent}>
-            <Text style={styles.artistName}>{artist.name}</Text>
-          </View>
+        {/* Frosted glass overlay for text readability */}
+        <BlurView intensity={20} tint="dark" style={styles.blurOverlay}>
+          {/* Content Container */}
+          <View style={styles.cardContent}>
+            {/* Left side - Artist Name */}
+            <View style={styles.leftContent}>
+              <Text style={styles.artistName}>{artist.name}</Text>
+            </View>
 
-          {/* Right side - Follow Button (only if signed in) */}
-          {isUserSignedIn && (
-            <ArtistFollowButton
-              artistId={artist.id}
-              artistName={artist.name}
-              initialFollowState={artist.isFollowing}
-              onFollowChange={(id, isFollowing) => {
-                // Optional: Handle follow state changes
-                console.log(`Artist ${id} follow state: ${isFollowing}`);
-              }}
-            />
-          )}
-        </View>
+            {/* Right side - Follow Button (only if signed in) */}
+            {isUserSignedIn && (
+              <ArtistFollowButton
+                artistId={artist.id}
+                artistName={artist.name}
+                spotifyId={artist.spotifyId}
+                genre={artist.genre}
+                imageUrl={artist.image}
+                followersCount={artist.followers ? parseInt(artist.followers.replace(/,/g, '')) : undefined}
+                popularity={artist.popularity}
+                bio={artist.bio}
+                initialFollowState={artist.isFollowing}
+                onFollowChange={(id, isFollowing) => {
+                  // Optional: Handle follow state changes
+                  console.log(`Artist ${id} follow state: ${isFollowing}`);
+                }}
+              />
+            )}
+          </View>
+        </BlurView>
       </ImageBackground>
     </Pressable>
   );
@@ -91,15 +87,19 @@ const styles = StyleSheet.create({
   },
   backgroundImage: {
     borderRadius: 15,
+    resizeMode: 'cover',
+    height: '150%',
+    top: '2%',
   },
   fallbackBackground: {
     flex: 1,
     justifyContent: 'flex-end',
     borderRadius: 15,
   },
-  overlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+  blurOverlay: {
+    flex: 1,
+    justifyContent: 'flex-end',
+    overflow: 'hidden',
     borderRadius: 15,
   },
   cardContent: {

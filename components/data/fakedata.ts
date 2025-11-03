@@ -18,6 +18,10 @@ export interface Artist {
   followers: string;
   image: string;
   isFollowing: boolean;
+  spotifyId?: string;
+  genre?: string;
+  popularity?: number;
+  bio?: string;
 }
 
 export const fakeConcertData: Event[] = [

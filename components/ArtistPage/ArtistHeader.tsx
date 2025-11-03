@@ -45,6 +45,12 @@ const ArtistHeader: React.FC<ArtistHeaderProps> = ({
                   <ArtistFollowButton
                     artistId={artist.id}
                     artistName={artist.name}
+                    spotifyId={artist.spotifyId}
+                    genre={artist.genre}
+                    imageUrl={artist.image}
+                    followersCount={artist.followers ? parseInt(artist.followers.replace(/,/g, '')) : undefined}
+                    popularity={artist.popularity}
+                    bio={artist.bio}
                     initialFollowState={artist.isFollowing}
                     onFollowChange={(id, isFollowing) => {
                       console.log(`Artist ${id} follow state: ${isFollowing}`);
@@ -65,6 +71,12 @@ const ArtistHeader: React.FC<ArtistHeaderProps> = ({
                   <ArtistFollowButton
                     artistId={artist.id}
                     artistName={artist.name}
+                    spotifyId={artist.spotifyId}
+                    genre={artist.genre}
+                    imageUrl={artist.image}
+                    followersCount={artist.followers ? parseInt(artist.followers.replace(/,/g, '')) : undefined}
+                    popularity={artist.popularity}
+                    bio={artist.bio}
                     initialFollowState={artist.isFollowing}
                     onFollowChange={(id, isFollowing) => {
                       console.log(`Artist ${id} follow state: ${isFollowing}`);

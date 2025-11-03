@@ -101,12 +101,11 @@ const SignIn: React.FC = () => {
       // Sync profile with Supabase database
       await syncUserProfile(userData);
 
-      Alert.alert('Success', 'Signed in successfully!', [
-        { text: 'OK', onPress: () => router.back() }
-      ]);
+      // Navigate to home page
+      router.replace('/');
     } catch (error) {
+      console.error('Sign in error:', error);
       Alert.alert('Error', 'Something went wrong. Please try again.');
-    } finally {
       setLoading(false);
     }
   };
@@ -188,27 +187,31 @@ const SignIn: React.FC = () => {
                 onPress: async () => {
                   // Mark that user dismissed the prompt
                   await dismissBiometricPrompt();
+                  // Navigate after dismissing
+                  router.replace('/');
                 },
               },
               {
                 text: 'Enable',
                 onPress: async () => {
                   await enableBiometricAuth(formData.email, formData.password);
+                  // Navigate after enabling
+                  router.replace('/');
                 },
               },
             ]
           );
+        } else {
+          // If biometric already enabled or dismissed, navigate immediately
+          router.replace('/');
         }
+      } else {
+        // Navigate to home page for sign up or if biometrics not available
+        router.replace('/');
       }
-
-      Alert.alert(
-        'Success',
-        isSignUp ? 'Account created successfully! Please check your email to verify.' : 'Signed in successfully!',
-        [{ text: 'OK', onPress: () => router.back() }]
-      );
     } catch (error) {
+      console.error('Auth error:', error);
       Alert.alert('Error', 'Something went wrong. Please try again.');
-    } finally {
       setLoading(false);
     }
   };
