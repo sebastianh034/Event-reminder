@@ -46,16 +46,33 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
 
       if (event === 'SIGNED_IN' && session?.user) {
-        // User signed in - update local state
+        // User signed in - load profile from database
+        console.log('[Auth Context] SIGNED_IN event - Loading profile from database');
+
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', session.user.id)
+          .single();
+
+        if (profileError) {
+          console.error('[Auth Context] Error fetching profile on sign in:', profileError);
+        } else {
+          console.log('[Auth Context] Profile loaded on sign in:', profile);
+        }
+
         const userData: User = {
           id: session.user.id,
           email: session.user.email || '',
-          name: session.user.user_metadata?.name || session.user.email?.split('@')[0] || 'User',
-          profilePicture: session.user.user_metadata?.profilePicture
+          name: profile?.name || session.user.user_metadata?.name || session.user.email?.split('@')[0] || 'User',
+          profilePicture: profile?.profile_picture || session.user.user_metadata?.profilePicture
         };
+
+        console.log('[Auth Context] Setting user data on sign in:', userData);
         await updateLocalUserData(userData);
       } else if (event === 'SIGNED_OUT') {
         // User signed out - clear local state
+        console.log('[Auth Context] SIGNED_OUT event - Clearing user data');
         await clearLocalUserData();
       } else if (event === 'TOKEN_REFRESHED') {
       }
@@ -78,13 +95,33 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
 
       if (session?.user) {
-        // Active Supabase session found - use it
+        // Active Supabase session found - fetch profile from database
+        console.log('[Auth Context] Loading user data for:', session.user.id);
+
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', session.user.id)
+          .single();
+
+        if (profileError) {
+          console.error('[Auth Context] Error fetching profile from database:', profileError);
+        } else {
+          console.log('[Auth Context] Profile loaded from database:', {
+            name: profile?.name,
+            email: profile?.email,
+            profile_picture: profile?.profile_picture,
+          });
+        }
+
         const userData: User = {
           id: session.user.id,
           email: session.user.email || '',
-          name: session.user.user_metadata?.name || session.user.email?.split('@')[0] || 'User',
-          profilePicture: session.user.user_metadata?.profilePicture
+          name: profile?.name || session.user.user_metadata?.name || session.user.email?.split('@')[0] || 'User',
+          profilePicture: profile?.profile_picture || session.user.user_metadata?.profilePicture
         };
+
+        console.log('[Auth Context] Final user data being set:', userData);
         await updateLocalUserData(userData);
       } else {
         // No active session - check local storage as fallback
@@ -149,13 +186,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         await removePushTokenFromSupabase(user.id);
       }
 
-      // Sign out from Supabase
-      const { error } = await supabase.auth.signOut();
-      if (error) {
-        console.error('Supabase sign out error:', error);
+      // Check if there's an active session before trying to sign out
+      const { data: { session } } = await supabase.auth.getSession();
+
+      if (session) {
+        // Only sign out if there's an active session
+        const { error } = await supabase.auth.signOut();
+        if (error) {
+          console.error('Supabase sign out error:', error);
+        }
       }
 
-      // Clear local data
+      // Clear local data regardless of session status
       await clearLocalUserData();
 
     } catch (error) {

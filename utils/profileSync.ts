@@ -129,24 +129,44 @@ export async function updateUserProfile(
   updates: Partial<User>
 ): Promise<boolean> {
   try {
-    const { error } = await supabase
+    console.log('[Profile Sync] Updating profile for user:', userId);
+    console.log('[Profile Sync] Update data:', {
+      name: updates.name,
+      email: updates.email,
+      profile_picture: updates.profilePicture,
+    });
+
+    // Only include fields that are actually being updated
+    const updateData: any = {
+      updated_at: new Date().toISOString(),
+    };
+
+    if (updates.name !== undefined) {
+      updateData.name = updates.name;
+    }
+    if (updates.email !== undefined) {
+      updateData.email = updates.email;
+    }
+    if (updates.profilePicture !== undefined) {
+      updateData.profile_picture = updates.profilePicture;
+    }
+
+    const { data, error } = await supabase
       .from('profiles')
-      .update({
-        name: updates.name,
-        email: updates.email,
-        profile_picture: updates.profilePicture,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', userId);
+      .update(updateData)
+      .eq('id', userId)
+      .select();
 
     if (error) {
-      console.error('Error updating user profile:', error);
+      console.error('[Profile Sync] Error updating user profile:', error);
+      console.error('[Profile Sync] Error details:', JSON.stringify(error, null, 2));
       return false;
     }
 
+    console.log('[Profile Sync] Profile updated successfully:', data);
     return true;
   } catch (error) {
-    console.error('Error in updateUserProfile:', error);
+    console.error('[Profile Sync] Exception in updateUserProfile:', error);
     return false;
   }
 }

@@ -13,7 +13,6 @@ import AuthHeader from '../components/SignIn/AuthHeader';
 import AuthToggle from '../components/SignIn/AuthToggle';
 import { signInWithGoogle } from '../utils/googleSignIn';
 import { signUpWithEmail, signInWithEmail, resetPassword } from '../utils/supabaseAuth';
-import { syncUserProfile } from '../utils/profileSync';
 import {
   checkBiometricAvailability,
   authenticateWithBiometrics,
@@ -98,12 +97,14 @@ const SignIn: React.FC = () => {
 
   const checkBiometrics = async () => {
     const { available, biometricType } = await checkBiometricAvailability();
+    console.log('[SignIn] Biometric availability:', available, 'Type:', biometricType);
     setBiometricAvailable(available);
     setBiometricType(getBiometricTypeName(biometricType));
 
     // If biometrics are enabled and available, prompt immediately
     if (available) {
       const enabled = await isBiometricEnabled();
+      console.log('[SignIn] Biometric enabled:', enabled);
       if (enabled) {
         promptBiometricAuth();
       }
@@ -126,7 +127,15 @@ const SignIn: React.FC = () => {
 
         // Sign in automatically
         await performSignIn(credentials.email, credentials.password);
+      } else {
+        // No credentials stored yet
+        Alert.alert(
+          'No Credentials Stored',
+          'Please sign in with your email and password first, then enable biometric authentication.'
+        );
       }
+    } else if (result.error) {
+      console.log('[SignIn] Biometric authentication failed:', result.error);
     }
   };
 
@@ -142,21 +151,43 @@ const SignIn: React.FC = () => {
         return;
       }
 
-      // Update local auth context
-      const userData = {
-        id: result.user.id,
-        name: result.user.name || email.split('@')[0] || 'User',
-        email: result.user.email,
-        profilePicture: undefined
-      };
+      if (biometricAvailable) {
+        const biometricEnabled = await isBiometricEnabled();
+        const userDismissed = await hasUserDismissedPrompt();
 
-      await signIn(userData);
-
-      // Sync profile with Supabase database
-      await syncUserProfile(userData);
-
-      // Navigate to home page
-      router.replace('/');
+        if (!biometricEnabled && !userDismissed) {
+          Alert.alert(
+            `Enable ${biometricType}?`,
+            `Use ${biometricType} to sign in quickly next time?`,
+            [
+              {
+                text: 'Not Now',
+                style: 'cancel',
+                onPress: async () => {
+                  // Mark that user dismissed the prompt
+                  await dismissBiometricPrompt();
+                  // Navigate after dismissing
+                  router.replace('/');
+                },
+              },
+              {
+                text: 'Enable',
+                onPress: async () => {
+                  await enableBiometricAuth(email, password);
+                  // Navigate after enabling
+                  router.replace('/');
+                },
+              },
+            ]
+          );
+        } else {
+          // If biometric already enabled or dismissed, navigate immediately
+          router.replace('/');
+        }
+      } else {
+        // Biometrics not available, navigate to home
+        router.replace('/');
+      }
     } catch (error) {
       console.error('Sign in error:', error);
       Alert.alert('Error', 'Something went wrong. Please try again.');
@@ -214,17 +245,10 @@ const SignIn: React.FC = () => {
       }
 
       // Update local auth context
-      const userData = {
-        id: result.user.id,
-        name: result.user.name || formData.name || 'User',
-        email: result.user.email,
-        profilePicture: undefined
-      };
-
-      await signIn(userData);
-
-      // Sync profile with Supabase database
-      await syncUserProfile(userData);
+      // Note: Don't pass name/profilePicture here - let it load from database via auth context
+      // DON'T call signIn() here - the auth context's SIGNED_IN event handler
+      // will automatically load the correct profile from the database
+      // This prevents showing old/incomplete data before the database load completes
 
       // Handle navigation and permission prompts based on sign in or sign up
       if (isSignUp) {
@@ -293,18 +317,9 @@ const SignIn: React.FC = () => {
       const result = await signInWithGoogle();
 
       if (result.success && result.userInfo && result.userInfo.data) {
-        const googleUser = result.userInfo.data.user;
-        const userData = {
-          id: googleUser.id,
-          name: googleUser.name || googleUser.email.split('@')[0] || 'User',
-          email: googleUser.email,
-          profilePicture: googleUser.photo || undefined
-        };
-
-        await signIn(userData);
-
-        // Sync profile with Supabase database
-        await syncUserProfile(userData);
+        // DON'T call signIn() here - the auth context's SIGNED_IN event handler
+        // will automatically load the correct profile from the database
+        // This prevents showing old/incomplete data before the database load completes
 
         Alert.alert('Success', 'Signed in with Google!', [
           { text: 'OK', onPress: () => { setLoading(false); router.back(); } }

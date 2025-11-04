@@ -51,22 +51,29 @@ export default function EditProfilePage() {
 
     try {
       setUploading(true);
+      console.log('[Edit Profile] Starting profile update for user:', user.id);
+      console.log('[Edit Profile] Current values - Name:', user.name, 'Email:', user.email);
+      console.log('[Edit Profile] New values - Name:', name.trim(), 'Email:', email.trim());
 
       let finalProfilePictureUrl = profilePicture;
 
       // Check if profile picture changed and is a local file
       if (profilePicture && profilePicture !== user?.profilePicture && profilePicture.startsWith('file://')) {
+        console.log('[Edit Profile] Uploading new profile picture...');
         // Upload the new profile picture
         const uploadedUrl = await uploadProfilePicture(user.id, profilePicture);
 
         if (uploadedUrl) {
           finalProfilePictureUrl = uploadedUrl;
+          console.log('[Edit Profile] Profile picture uploaded successfully:', uploadedUrl);
         } else {
+          console.log('[Edit Profile] Failed to upload profile picture');
           Alert.alert('Warning', 'Failed to upload profile picture. Other changes will still be saved.');
         }
       }
 
       // Update user in context
+      console.log('[Edit Profile] Updating user in context...');
       await updateUser({
         name: name.trim(),
         email: email.trim(),
@@ -74,11 +81,14 @@ export default function EditProfilePage() {
       });
 
       // Update in database
-      await updateUserProfile(user.id, {
+      console.log('[Edit Profile] Updating profile in Supabase database...');
+      const success = await updateUserProfile(user.id, {
         name: name.trim(),
         email: email.trim(),
         profilePicture: finalProfilePictureUrl || undefined,
       });
+
+      console.log('[Edit Profile] Database update result:', success);
 
       Alert.alert('Success', 'Profile updated successfully', [
         {
@@ -87,7 +97,7 @@ export default function EditProfilePage() {
         },
       ]);
     } catch (error) {
-      console.error('Error updating profile:', error);
+      console.error('[Edit Profile] Error updating profile:', error);
       Alert.alert('Error', 'Failed to update profile');
     } finally {
       setUploading(false);
