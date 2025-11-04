@@ -26,8 +26,8 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({ onSignInPress }) => {
           ]}
           onPress={handleProfilePress}
         >
-          <Image 
-            source={{ uri: user?.profilePicture || 'https://randomuser.me/api/portraits/men/1.jpg' }} 
+          <Image
+            source={{ uri: user?.profilePicture || `https://api.dicebear.com/7.x/notionists-neutral/svg?seed=${user?.email || 'default'}` }}
             style={styles.profileImage}
           />
         </Pressable>

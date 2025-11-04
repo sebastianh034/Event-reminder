@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { Text, StyleSheet, Pressable, ActivityIndicator } from 'react-native';
+import React, { useState } from 'react';
+import { Text, StyleSheet, Pressable, ActivityIndicator, Alert } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { followArtist, unfollowArtist } from '../utils/artistService';
 import { useAuth } from '../context/authcontext';
 import { useFollowedArtists } from '../context/followedArtistsContext';
+import { router } from 'expo-router';
 
 
 interface ArtistFollowButtonProps {
@@ -43,7 +44,20 @@ const ArtistFollowButton: React.FC<ArtistFollowButtonProps> = ({
   const isFollowing = spotifyId ? isFollowingFromContext(spotifyId) : initialFollowState;
 
   const handlePress = async () => {
-    if (isLoading || !user) return;
+    if (isLoading) return;
+
+    // If user is not signed in, prompt them to create an account
+    if (!user) {
+      Alert.alert(
+        'Sign In Required',
+        'You need to create an account or sign in to follow artists.',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Sign In', onPress: () => router.push('/signin') }
+        ]
+      );
+      return;
+    }
 
     const newFollowState = !isFollowing;
     setIsLoading(true);

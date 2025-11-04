@@ -1,17 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   StyleSheet,
   StatusBar,
   ScrollView,
+  RefreshControl,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
-import { type Artist, type Event, getFollowedArtistsEvents, getArtistIdByName } from '../components/data/fakedata';
+import type { Artist } from '../types';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../context/authcontext';
 import { useFocusEffect } from '@react-navigation/native';
-import { useCallback } from 'react';
 import * as Notifications from 'expo-notifications';
 import { useNotifications } from '../context/notificationContext';
 import HeaderSection from '../components/HomePage/HeaderSection';
@@ -20,27 +20,52 @@ import ContentContainer from '../components/HomePage/ContentContainer';
 import PopularArtistsSection from '../components/HomePage/PopularArtistsSection';
 import SwipeableContent from '../components/HomePage/SwipeableContent';
 import FollowingEventsSection from '../components/HomePage/FollowingEventsSection';
+import { getFollowedArtistsEvents, type Event as SupabaseEvent } from '../utils/eventsService';
 
 const HomePage: React.FC = () => {
   // Use auth context instead of simulated state
-  const { isSignedIn } = useAuth();
+  const { isSignedIn, user } = useAuth();
   const { notificationsEnabled } = useNotifications();
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [events, setEvents] = useState<SupabaseEvent[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
+  // Load events when user signs in or page focuses
   useFocusEffect(
     useCallback(() => {
       setSearchQuery('');
-    }, [])
+      if (isSignedIn && user?.id) {
+        loadEvents();
+      }
+    }, [isSignedIn, user?.id])
   );
 
+  const loadEvents = async () => {
+    if (!user?.id) return;
+
+    setLoading(true);
+    try {
+      const fetchedEvents = await getFollowedArtistsEvents(user.id);
+      setEvents(fetchedEvents);
+    } catch (error) {
+      console.error('Error loading events:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await loadEvents();
+    setRefreshing(false);
+  };
+
   const handleSignInPress = (): void => {
-    console.log("pressed");
     router.push('./signin');
   };
 
   const handleArtistPress = (artist: Artist): void => {
-    console.log(`Navigate to ${artist.name} artist page`);
-    // Pass artist data through route params
     router.push({
       pathname: `/artist/[id]`,
       params: {
@@ -62,20 +87,17 @@ const HomePage: React.FC = () => {
     }
   };
 
-  const handleEventPress = async (event: Event): Promise<void> => {
-    console.log(`Pressed ${event.artist} event on ${event.date}`);
-
+  const handleEventPress = async (event: SupabaseEvent): Promise<void> => {
     // Only send notification if enabled
     if (notificationsEnabled) {
-      const artistId = event.artistId || getArtistIdByName(event.artist);
       await Notifications.scheduleNotificationAsync({
         content: {
-          title: `${event.artist} - ${event.status}`,
-          body: `${event.venue} • ${event.date}\n${event.location}`,
+          title: `${event.artist_name} - ${event.status}`,
+          body: `${event.venue} • ${event.event_date}\n${event.location}`,
           data: {
             eventId: event.id,
-            artist: event.artist,
-            artistId: artistId?.toString()
+            artist: event.artist_name,
+            artistId: event.artist_id
           },
         },
         trigger: null,
@@ -95,7 +117,17 @@ const HomePage: React.FC = () => {
         style={styles.backgroundGradient}
       >
         <SafeAreaView style={styles.safeArea} edges={['top']}>
-          <ScrollView style={styles.scrollContainer} showsVerticalScrollIndicator={false}>
+          <ScrollView
+            style={styles.scrollContainer}
+            showsVerticalScrollIndicator={false}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+                tintColor="#ffffff"
+              />
+            }
+          >
             <HeaderSection onSignInPress={handleSignInPress} />
 
             <SearchBar
@@ -108,7 +140,8 @@ const HomePage: React.FC = () => {
               {isSignedIn ? (
                 <SwipeableContent>
                   <FollowingEventsSection
-                    events={getFollowedArtistsEvents()}
+                    events={events}
+                    loading={loading}
                     onEventPress={handleEventPress}
                   />
                   <PopularArtistsSection

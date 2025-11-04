@@ -24,9 +24,14 @@ import {
   dismissBiometricPrompt,
   hasUserDismissedPrompt,
 } from '../utils/biometricAuth';
+import * as Location from 'expo-location';
+import { useLocation } from '../context/locationContext';
+import { useNotifications } from '../context/notificationContext';
 
 const SignIn: React.FC = () => {
   const { signIn } = useAuth();
+  const { toggleLocation } = useLocation();
+  const { toggleNotifications } = useNotifications();
   const [isSignUp, setIsSignUp] = useState(false);
   const [loading, setLoading] = useState(false);
   const [biometricAvailable, setBiometricAvailable] = useState(false);
@@ -42,6 +47,54 @@ const SignIn: React.FC = () => {
   useEffect(() => {
     checkBiometrics();
   }, []);
+
+  // Function to prompt new users for permissions
+  const promptNewUserPermissions = async () => {
+    // First, ask for location permission
+    Alert.alert(
+      'Enable Location',
+      'Find concerts and events near you. You can change this later in Settings.',
+      [
+        {
+          text: 'Not Now',
+          style: 'cancel',
+          onPress: () => promptNotificationPermission(),
+        },
+        {
+          text: 'Enable',
+          onPress: async () => {
+            const { status } = await Location.requestForegroundPermissionsAsync();
+            if (status === 'granted') {
+              await toggleLocation(true);
+            }
+            promptNotificationPermission();
+          },
+        },
+      ]
+    );
+  };
+
+  const promptNotificationPermission = () => {
+    // Then, ask for notification permission
+    Alert.alert(
+      'Enable Notifications',
+      'Get notified about new events from your favorite artists. You can change this later in Settings.',
+      [
+        {
+          text: 'Not Now',
+          style: 'cancel',
+          onPress: () => router.replace('/'),
+        },
+        {
+          text: 'Enable',
+          onPress: async () => {
+            await toggleNotifications(true);
+            router.replace('/');
+          },
+        },
+      ]
+    );
+  };
 
   const checkBiometrics = async () => {
     const { available, biometricType } = await checkBiometricAvailability();
@@ -85,6 +138,7 @@ const SignIn: React.FC = () => {
 
       if (!result.success || !result.user) {
         Alert.alert('Error', result.error || 'Failed to sign in');
+        setLoading(false);
         return;
       }
 
@@ -155,6 +209,7 @@ const SignIn: React.FC = () => {
 
       if (!result.success || !result.user) {
         Alert.alert('Error', result.error || 'Authentication failed');
+        setLoading(false);
         return;
       }
 
@@ -171,43 +226,49 @@ const SignIn: React.FC = () => {
       // Sync profile with Supabase database
       await syncUserProfile(userData);
 
-      // Offer to enable biometric auth after successful sign-in (only if user hasn't dismissed it)
-      if (!isSignUp && biometricAvailable) {
-        const biometricEnabled = await isBiometricEnabled();
-        const userDismissed = await hasUserDismissedPrompt();
+      // Handle navigation and permission prompts based on sign in or sign up
+      if (isSignUp) {
+        // New user - prompt for location and notifications
+        await promptNewUserPermissions();
+      } else {
+        // Existing user signing in - offer biometric auth or go to home
+        if (biometricAvailable) {
+          const biometricEnabled = await isBiometricEnabled();
+          const userDismissed = await hasUserDismissedPrompt();
 
-        if (!biometricEnabled && !userDismissed) {
-          Alert.alert(
-            `Enable ${biometricType}?`,
-            `Use ${biometricType} to sign in quickly next time?`,
-            [
-              {
-                text: 'Not Now',
-                style: 'cancel',
-                onPress: async () => {
-                  // Mark that user dismissed the prompt
-                  await dismissBiometricPrompt();
-                  // Navigate after dismissing
-                  router.replace('/');
+          if (!biometricEnabled && !userDismissed) {
+            Alert.alert(
+              `Enable ${biometricType}?`,
+              `Use ${biometricType} to sign in quickly next time?`,
+              [
+                {
+                  text: 'Not Now',
+                  style: 'cancel',
+                  onPress: async () => {
+                    // Mark that user dismissed the prompt
+                    await dismissBiometricPrompt();
+                    // Navigate after dismissing
+                    router.replace('/');
+                  },
                 },
-              },
-              {
-                text: 'Enable',
-                onPress: async () => {
-                  await enableBiometricAuth(formData.email, formData.password);
-                  // Navigate after enabling
-                  router.replace('/');
+                {
+                  text: 'Enable',
+                  onPress: async () => {
+                    await enableBiometricAuth(formData.email, formData.password);
+                    // Navigate after enabling
+                    router.replace('/');
+                  },
                 },
-              },
-            ]
-          );
+              ]
+            );
+          } else {
+            // If biometric already enabled or dismissed, navigate immediately
+            router.replace('/');
+          }
         } else {
-          // If biometric already enabled or dismissed, navigate immediately
+          // Biometrics not available, navigate to home
           router.replace('/');
         }
-      } else {
-        // Navigate to home page for sign up or if biometrics not available
-        router.replace('/');
       }
     } catch (error) {
       console.error('Auth error:', error);
@@ -246,14 +307,14 @@ const SignIn: React.FC = () => {
         await syncUserProfile(userData);
 
         Alert.alert('Success', 'Signed in with Google!', [
-          { text: 'OK', onPress: () => router.back() }
+          { text: 'OK', onPress: () => { setLoading(false); router.back(); } }
         ]);
       } else {
         Alert.alert('Error', result.error || 'Failed to sign in with Google');
+        setLoading(false);
       }
     } catch (error) {
       Alert.alert('Error', 'An unexpected error occurred');
-    } finally {
       setLoading(false);
     }
   };
@@ -300,7 +361,7 @@ const SignIn: React.FC = () => {
         <AuthToggle isSignUp={isSignUp} onToggle={toggleMode} />
 
         <SocialLogin
-          onApplePress={() => console.log('Apple pressed')}
+          onApplePress={() => Alert.alert('Coming Soon', 'Apple sign-in will be available in a future update.')}
           onGooglePress={handleGoogleSignIn}
         />
       </View>

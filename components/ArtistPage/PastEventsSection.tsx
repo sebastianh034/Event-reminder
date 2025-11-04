@@ -1,22 +1,31 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import EventCard from '../EventCard';
-import { type Event } from '../data/fakedata';
+import EventCardSkeleton from '../skeletons/EventCardSkeleton';
+import { type Event } from '../../utils/eventsService';
 
 interface PastEventsSectionProps {
   pastEvents: Event[];
   onEventPress: (event: Event) => void;
+  loading?: boolean;
 }
 
 const PastEventsSection: React.FC<PastEventsSectionProps> = ({
   pastEvents,
-  onEventPress
+  onEventPress,
+  loading = false,
 }) => {
   return (
     <View style={styles.sectionContainer}>
       <Text style={styles.sectionTitle}>Past Events</Text>
 
-      {pastEvents.length > 0 ? (
+      {loading ? (
+        // Show skeleton loaders while loading
+        <>
+          <EventCardSkeleton />
+          <EventCardSkeleton />
+        </>
+      ) : pastEvents.length > 0 ? (
         pastEvents.map((event) => (
           <EventCard
             key={`past-${event.id}`}

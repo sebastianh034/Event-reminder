@@ -7,7 +7,7 @@ import {
   StyleSheet,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { ExtendedArtist } from '../data/ArtistsFakeData';
+import { ExtendedArtist } from '../../types';
 import ArtistFollowButton from '../FollowButton';
 
 interface ArtistResultCardProps {

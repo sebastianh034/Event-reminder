@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable, ImageBackground } from 'react-native';
 import { BlurView } from 'expo-blur';
-import { type Artist } from './data/fakedata';
+import { type Artist } from '../../types';
 import ArtistFollowButton from './FollowButton';
 import * as Haptics from 'expo-haptics';
 
@@ -57,10 +57,6 @@ const ArtistCard: React.FC<ArtistCardProps> = ({
                 popularity={artist.popularity}
                 bio={artist.bio}
                 initialFollowState={artist.isFollowing}
-                onFollowChange={(id, isFollowing) => {
-                  // Optional: Handle follow state changes
-                  console.log(`Artist ${id} follow state: ${isFollowing}`);
-                }}
               />
             )}
           </View>

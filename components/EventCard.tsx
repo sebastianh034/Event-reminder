@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
-import { type Event } from '../components/data/fakedata';
+import { type Event, formatEventDate, getEventStatusColor, getEventStatusLabel } from '../utils/eventsService';
 import * as Haptics from 'expo-haptics';
 
 interface EventCardProps {
@@ -15,22 +15,11 @@ const EventCard: React.FC<EventCardProps> = ({ event, onPress }) => {
       onPress();
     }
   };
-  const getStatusStyle = (status: string) => {
-    switch (status) {
-      case 'Low Stock':
-        return { backgroundColor: '#F59E0B', color: '#000' }; // Yellow
-      case 'Sold Out':
-        return { backgroundColor: '#EF4444', color: '#FFF' }; // Red
-      case 'Tickets Soon':
-        return { backgroundColor: '#10B981', color: '#FFF' }; // Green
-      case 'Available':
-        return { backgroundColor: '#3B82F6', color: '#FFF' }; // Blue
-      default:
-        return { backgroundColor: '#6B7280', color: '#FFF' }; // Gray
-    }
-  };
 
-  const statusStyle = getStatusStyle(event.status);
+  // Format date from ISO string
+  const formattedDate = formatEventDate(event.event_date);
+  const statusColor = getEventStatusColor(event.status);
+  const statusLabel = getEventStatusLabel(event.status);
 
   return (
     <Pressable
@@ -43,20 +32,20 @@ const EventCard: React.FC<EventCardProps> = ({ event, onPress }) => {
       <View style={styles.cardContent}>
         {/* Left side - Artist and Date Info */}
         <View style={styles.leftContent}>
-          <Text style={styles.artistName}>{event.artist}</Text>
-          <View style={styles.dateRow}>
-            <Text style={styles.month}>{event.date.split(' ')[0]}</Text>
-            <Text style={styles.day}>{event.date.split(' ')[1]}</Text>
-          </View>
+          <Text style={styles.artistName}>{event.artist_name}</Text>
+          <Text style={styles.dateText}>{formattedDate}</Text>
           <Text style={styles.venue}>{event.venue}</Text>
           <Text style={styles.location}>{event.location}</Text>
+          {event.price_range && (
+            <Text style={styles.price}>{event.price_range}</Text>
+          )}
         </View>
 
         {/* Right side - Status Badge */}
         <View style={styles.rightContent}>
-          <View style={[styles.statusBadge, { backgroundColor: statusStyle.backgroundColor }]}>
-            <Text style={[styles.statusText, { color: statusStyle.color }]}>
-              {event.status}
+          <View style={[styles.statusBadge, { backgroundColor: statusColor }]}>
+            <Text style={styles.statusText}>
+              {statusLabel}
             </Text>
           </View>
         </View>
@@ -93,21 +82,11 @@ const styles = StyleSheet.create({
     color: 'white',
     marginBottom: 4,
   },
-  dateRow: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-    marginBottom: 4,
-  },
-  month: {
-    fontSize: 16,
+  dateText: {
+    fontSize: 14,
     fontWeight: '600',
-    color: 'white',
-    marginRight: 6,
-  },
-  day: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: 'white',
+    color: 'rgba(255, 255, 255, 0.9)',
+    marginBottom: 4,
   },
   venue: {
     fontSize: 14,
@@ -117,6 +96,13 @@ const styles = StyleSheet.create({
   location: {
     fontSize: 14,
     color: 'rgba(255, 255, 255, 0.6)',
+    marginBottom: 2,
+  },
+  price: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#10B981',
+    marginTop: 2,
   },
   statusBadge: {
     paddingHorizontal: 12,
@@ -129,6 +115,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
     textAlign: 'center',
+    color: 'white',
   },
 });
 

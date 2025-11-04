@@ -35,7 +35,6 @@ export const FollowedArtistsProvider: React.FC<{ children: ReactNode }> = ({ chi
     try {
       const spotifyIds = await getFollowedArtists(user.id);
       setFollowedArtistIds(new Set(spotifyIds));
-      console.log('[Followed Artists] Loaded', spotifyIds.length, 'followed artists');
     } catch (error) {
       console.error('[Followed Artists] Error loading followed artists:', error);
     } finally {

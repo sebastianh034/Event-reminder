@@ -4,17 +4,17 @@ import {
   FlatList,
   StyleSheet,
 } from 'react-native';
-import { ExtendedArtist } from '../data/ArtistsFakeData';
+import { ExtendedArtist } from '../../types';
 import ArtistResultCard from './ArtistResultCard';
 
-interface PopularArtistsSectionProps {
+interface ArtistListSectionProps {
   artists: ExtendedArtist[];
   followedArtists: Set<number>;
   onArtistPress: (artist: ExtendedArtist) => void;
   onToggleFollow: (artistId: number) => void;
 }
 
-const PopularArtistsSection: React.FC<PopularArtistsSectionProps> = ({
+const ArtistListSection: React.FC<ArtistListSectionProps> = ({
   artists,
   followedArtists,
   onArtistPress,
@@ -49,4 +49,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default PopularArtistsSection;
+export default ArtistListSection;

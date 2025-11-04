@@ -21,9 +21,6 @@ Notifications.setNotificationHandler({
 export async function registerForPushNotificationsAsync(): Promise<string | undefined> {
   let token: string | undefined;
 
-  console.log('[Push Notifications] Starting registration...');
-  console.log('[Push Notifications] Platform:', Platform.OS);
-  console.log('[Push Notifications] Is physical device:', Device.isDevice);
 
   if (Platform.OS === 'android') {
     await Notifications.setNotificationChannelAsync('default', {
@@ -32,29 +29,23 @@ export async function registerForPushNotificationsAsync(): Promise<string | unde
       vibrationPattern: [0, 250, 250, 250],
       lightColor: '#3B82F6',
     });
-    console.log('[Push Notifications] Android notification channel created');
   }
 
   // Try to get push token (works on physical devices and some emulators with dev builds)
   const { status: existingStatus } = await Notifications.getPermissionsAsync();
-  console.log('[Push Notifications] Existing permission status:', existingStatus);
 
   let finalStatus = existingStatus;
 
   if (existingStatus !== 'granted') {
-    console.log('[Push Notifications] Requesting permissions...');
     const { status } = await Notifications.requestPermissionsAsync();
     finalStatus = status;
-    console.log('[Push Notifications] Permission request result:', finalStatus);
   }
 
   if (finalStatus !== 'granted') {
-    console.log('[Push Notifications] Permission denied - cannot get push token');
     return;
   }
 
   try {
-    console.log('[Push Notifications] Getting Expo push token...');
 
     // Add a timeout to prevent blocking on simulators/emulators
     const tokenPromise = Notifications.getExpoPushTokenAsync({
@@ -67,15 +58,12 @@ export async function registerForPushNotificationsAsync(): Promise<string | unde
 
     const pushToken = await Promise.race([tokenPromise, timeoutPromise]);
     token = pushToken.data;
-    console.log('[Push Notifications] ✅ Push token received:', token);
   } catch (error: any) {
     if (error.message === 'Push token request timed out') {
-      console.log('[Push Notifications] ⏱️ Timeout - skipping push notifications (simulator/emulator)');
     } else {
       console.error('[Push Notifications] ❌ Error getting push token:', error);
     }
     if (!Device.isDevice) {
-      console.log('[Push Notifications] Note: Push notifications may not work on emulators. Use a physical device for full testing.');
     }
   }
 
@@ -107,7 +95,6 @@ export async function savePushTokenToSupabase(
     if (error) {
       console.error('Error saving push token:', error);
     } else {
-      console.log('Push token saved successfully');
     }
   } catch (error) {
     console.error('Error in savePushTokenToSupabase:', error);
@@ -128,7 +115,6 @@ export async function removePushTokenFromSupabase(userId: string): Promise<void>
     if (error) {
       console.error('Error removing push token:', error);
     } else {
-      console.log('Push token removed successfully');
     }
   } catch (error) {
     console.error('Error in removePushTokenFromSupabase:', error);
@@ -140,14 +126,11 @@ export async function removePushTokenFromSupabase(userId: string): Promise<void>
  * Call this after user signs in
  */
 export async function setupPushNotifications(userId: string): Promise<void> {
-  console.log('[Push Notifications] Setting up push notifications for user:', userId);
 
   const token = await registerForPushNotificationsAsync();
 
   if (token) {
-    console.log('[Push Notifications] Token received, saving to Supabase...');
     await savePushTokenToSupabase(token, userId);
   } else {
-    console.log('[Push Notifications] No token received - check permissions or device compatibility');
   }
 }

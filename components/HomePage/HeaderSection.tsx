@@ -3,7 +3,7 @@ import {
   View,
   StyleSheet,
 } from 'react-native';
-import ProfileHeader from '../pfp';
+import ProfileHeader from '../ProfileHeaderButton';
 import MainTitle from './MainTitle';
 
 interface HeaderSectionProps {

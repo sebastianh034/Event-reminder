@@ -6,7 +6,7 @@ import {
   ImageBackground,
   Pressable,
 } from 'react-native';
-import { type Artist } from '../data/fakedata';
+import { type Artist } from '../../types';
 import BackButton from '../backbutton';
 import ArtistFollowButton from '../FollowButton';
 
@@ -52,9 +52,6 @@ const ArtistHeader: React.FC<ArtistHeaderProps> = ({
                     popularity={artist.popularity}
                     bio={artist.bio}
                     initialFollowState={artist.isFollowing}
-                    onFollowChange={(id, isFollowing) => {
-                      console.log(`Artist ${id} follow state: ${isFollowing}`);
-                    }}
                   />
                 )}
               </View>
@@ -78,9 +75,6 @@ const ArtistHeader: React.FC<ArtistHeaderProps> = ({
                     popularity={artist.popularity}
                     bio={artist.bio}
                     initialFollowState={artist.isFollowing}
-                    onFollowChange={(id, isFollowing) => {
-                      console.log(`Artist ${id} follow state: ${isFollowing}`);
-                    }}
                   />
                 )}
               </View>

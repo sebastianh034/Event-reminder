@@ -8,7 +8,7 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { router, useLocalSearchParams } from 'expo-router';
 import { searchArtists } from '../utils/spotifyAPI';
-import { ExtendedArtist } from '../components/data/ArtistsFakeData';
+import type { ExtendedArtist } from '../types';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import SearchHeader from '../components/SearchPage/SearchHeader';
 import SearchInput from '../components/SearchPage/SearchInput';

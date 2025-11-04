@@ -1,26 +1,36 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import EventCard from '../EventCard';
-import { type Event } from '../data/fakedata';
+import EventCardSkeleton from '../skeletons/EventCardSkeleton';
+import { type Event } from '../../utils/eventsService';
 
 interface EventsSectionProps {
   events: Event[];
   onEventPress: (event: Event) => void;
   title?: string;
   emptyMessage?: string;
+  loading?: boolean;
 }
 
 const EventsSection: React.FC<EventsSectionProps> = ({
   events,
   onEventPress,
   title = 'Events',
-  emptyMessage = 'No Future Events'
+  emptyMessage = 'No Future Events',
+  loading = false,
 }) => {
   return (
     <View style={styles.sectionContainer}>
       <Text style={styles.sectionTitle}>{title}</Text>
 
-      {events.length > 0 ? (
+      {loading ? (
+        // Show skeleton loaders while loading
+        <>
+          <EventCardSkeleton />
+          <EventCardSkeleton />
+          <EventCardSkeleton />
+        </>
+      ) : events.length > 0 ? (
         events.map((event) => (
           <EventCard
             key={event.id}

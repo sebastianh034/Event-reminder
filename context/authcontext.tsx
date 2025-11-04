@@ -44,7 +44,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
     // Listen for auth state changes from Supabase
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('Auth state changed:', event, session?.user?.id);
 
       if (event === 'SIGNED_IN' && session?.user) {
         // User signed in - update local state
@@ -59,7 +58,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         // User signed out - clear local state
         await clearLocalUserData();
       } else if (event === 'TOKEN_REFRESHED') {
-        console.log('Token refreshed successfully');
       }
     });
 
@@ -95,7 +93,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
         if (isSignedInStored === 'true' && userDataStored) {
           // Had local data but no Supabase session - clear it
-          console.log('Local session found but no Supabase session - clearing');
           await clearLocalUserData();
         } else {
           // Properly logged out
@@ -139,10 +136,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       // Update local storage and state
       await updateLocalUserData(userData);
 
-      console.log('User signed in successfully:', userData.name);
-
-      // TODO: Re-enable push notifications when testing on physical devices
-      // await setupPushNotifications(userData.id);
     } catch (error) {
       console.error('Error signing in:', error);
       throw error;
@@ -165,7 +158,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       // Clear local data
       await clearLocalUserData();
 
-      console.log('User signed out successfully');
     } catch (error) {
       console.error('Error signing out:', error);
       throw error;
@@ -187,7 +179,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       // Update state
       setUser(updatedUser);
 
-      console.log('User updated successfully:', updatedUser.name);
     } catch (error) {
       console.error('Error updating user:', error);
       throw error;

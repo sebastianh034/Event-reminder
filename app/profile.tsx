@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   StyleSheet,
@@ -9,23 +9,40 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../context/authcontext';
 import { router } from 'expo-router';
-import { getFollowedArtistsEvents } from '../components/data/fakedata';
-import { fakePastEvents } from '../components/data/fakedata';
 import BackButton from '../components/backbutton';
 import ProfileCard from '../components/Profile/ProfileCard';
 import ProfileHeader from '../components/Profile/ProfileHeader';
 import StatsCard from '../components/Profile/StatsCard';
 import ConnectedAppButton from '../components/Profile/ConnectedAppButton';
 import ActionButton from '../components/Profile/ActionButton';
+import { getFollowedArtistsEvents, getPastFollowedArtistsEvents } from '../utils/eventsService';
 
 export default function ProfilePage() {
   const { user, signOut } = useAuth();
   const [spotifyConnected, setSpotifyConnected] = useState(false);
   const [appleMusicConnected, setAppleMusicConnected] = useState(false);
+  const [upcomingEventsCount, setUpcomingEventsCount] = useState(0);
+  const [pastEventsCount, setPastEventsCount] = useState(0);
 
-  // Calculate stats
-  const upcomingEventsCount = getFollowedArtistsEvents().length;
-  const pastEventsCount = fakePastEvents.length;
+  // Load stats from Supabase
+  useEffect(() => {
+    if (user?.id) {
+      loadStats();
+    }
+  }, [user?.id]);
+
+  const loadStats = async () => {
+    if (!user?.id) return;
+
+    try {
+      const upcomingEvents = await getFollowedArtistsEvents(user.id);
+      const pastEvents = await getPastFollowedArtistsEvents(user.id);
+      setUpcomingEventsCount(upcomingEvents.length);
+      setPastEventsCount(pastEvents.length);
+    } catch (error) {
+      console.error('Error loading stats:', error);
+    }
+  };
 
   const handleEditProfile = () => {
     router.push('/editprofile');
@@ -64,7 +81,6 @@ export default function ProfilePage() {
       ]);
     } else {
       Alert.alert('Connect Spotify', 'Spotify integration coming soon!');
-      // TODO: Implement Spotify OAuth
     }
   };
 
@@ -79,7 +95,6 @@ export default function ProfilePage() {
       ]);
     } else {
       Alert.alert('Connect Apple Music', 'Apple Music integration coming soon!');
-      // TODO: Implement Apple Music integration
     }
   };
 
@@ -103,7 +118,7 @@ export default function ProfilePage() {
               <ProfileHeader
                 name={user?.name || 'User'}
                 email={user?.email || 'user@example.com'}
-                profilePicture={user?.profilePicture || 'https://randomuser.me/api/portraits/men/1.jpg'}
+                profilePicture={user?.profilePicture || `https://api.dicebear.com/7.x/notionists-neutral/svg?seed=${user?.email || 'default'}`}
               />
             </ProfileCard>
 

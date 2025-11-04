@@ -1,4 +1,5 @@
 import { supabase } from './supabase';
+import { fetchAndSaveArtistEvents } from './eventsAPI';
 
 /**
  * Save or update an artist in the database
@@ -87,9 +88,6 @@ export async function followArtist(
   }
 ): Promise<boolean> {
   try {
-    console.log('[Follow] Following artist:', artistData.name);
-    console.log('[Follow] User ID:', userId);
-    console.log('[Follow] Spotify ID:', artistData.spotifyId);
 
     // First, save/update the artist in the database
     const artistId = await saveArtist(artistData);
@@ -99,12 +97,9 @@ export async function followArtist(
       return false;
     }
 
-    console.log('[Follow] Artist saved with ID:', artistId);
 
     // Check current Supabase session
     const { data: sessionData } = await supabase.auth.getSession();
-    console.log('[Follow] Current Supabase session user:', sessionData.session?.user?.id);
-    console.log('[Follow] User ID being used:', userId);
 
     // Then, create the followed_artists relationship
     const { data, error } = await supabase
@@ -118,15 +113,31 @@ export async function followArtist(
     if (error) {
       // If error is duplicate (already following), consider it success
       if (error.code === '23505') {
-        console.log('[Follow] Already following this artist');
         return true;
       }
       console.error('[Follow] Error creating followed_artists relationship:', error);
       return false;
     }
 
-    console.log('[Follow] ✅ Successfully followed artist');
-    console.log('[Follow] Followed relationship created:', data);
+
+    // Fetch and save Ticketmaster events for this artist (async, don't wait)
+    fetchAndSaveArtistEvents(artistId, artistData.name, undefined, artistData.genre)
+      .then(result => {
+        if (result.success && result.ticketmasterId) {
+          // Update artist with Ticketmaster ID
+          supabase
+            .from('artists')
+            .update({ ticketmaster_id: result.ticketmasterId })
+            .eq('id', artistId)
+            .then(() => {
+            });
+        } else {
+        }
+      })
+      .catch(error => {
+        console.error('[Follow] Error fetching Ticketmaster events:', error);
+      });
+
     return true;
   } catch (error) {
     console.error('[Follow] Exception in followArtist:', error);
@@ -142,7 +153,6 @@ export async function unfollowArtist(
   spotifyId: string
 ): Promise<boolean> {
   try {
-    console.log('[Unfollow] Unfollowing artist with Spotify ID:', spotifyId);
 
     // First, get the artist UUID from Spotify ID
     const { data: artist } = await supabase
@@ -168,7 +178,6 @@ export async function unfollowArtist(
       return false;
     }
 
-    console.log('[Unfollow] ✅ Successfully unfollowed artist');
     return true;
   } catch (error) {
     console.error('[Unfollow] Exception in unfollowArtist:', error);
@@ -201,7 +210,6 @@ export async function getFollowedArtists(userId: string): Promise<string[]> {
       ?.map((item: any) => item.artists?.spotify_id)
       .filter((id: string | undefined) => id !== undefined) || [];
 
-    console.log('[Follow] Loaded followed artists:', spotifyIds.length);
     return spotifyIds;
   } catch (error) {
     console.error('[Follow] Exception in getFollowedArtists:', error);

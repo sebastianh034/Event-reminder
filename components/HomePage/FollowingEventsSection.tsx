@@ -1,32 +1,27 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { type Event } from '../data/fakedata';
+import { type Event } from '../../utils/eventsService';
 import EventCard from '../EventCard';
 import EventCardSkeleton from '../skeletons/EventCardSkeleton';
 
 interface FollowingEventsSectionProps {
   events: Event[];
+  loading?: boolean;
   onEventPress: (event: Event) => void;
 }
 
-const FollowingEventsSection: React.FC<FollowingEventsSectionProps> = ({ events, onEventPress }) => {
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    // Simulate loading delay to test skeleton screen
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 2000); // 2 second delay
-
-    return () => clearTimeout(timer);
-  }, []);
+const FollowingEventsSection: React.FC<FollowingEventsSectionProps> = ({
+  events,
+  loading = false,
+  onEventPress
+}) => {
 
   return (
     <View style={styles.container}>
       <Text style={styles.sectionTitle}>Upcoming Events</Text>
       <Text style={styles.subtitle}>From artists you follow</Text>
 
-      {isLoading ? (
+      {loading ? (
         // Show skeleton cards while loading
         <View style={styles.eventsContainer}>
           <EventCardSkeleton />

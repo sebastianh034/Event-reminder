@@ -6,8 +6,9 @@ import {
 } from 'react-native';
 import ArtistCard from '../ArtistCard';
 import ArtistCardSkeleton from '../skeletons/ArtistCardSkeleton';
-import { type Artist } from '../data/fakedata';
+import type { Artist } from '../../types';
 import { searchArtists } from '../../utils/spotifyAPI';
+import { POPULAR_ARTIST_NAMES, MAX_HOMEPAGE_ARTISTS } from '../../constants';
 
 interface PopularArtistsSectionProps {
   onArtistPress: (artist: Artist) => void;
@@ -29,11 +30,10 @@ const PopularArtistsSection: React.FC<PopularArtistsSectionProps> = ({
     setIsLoading(true);
     try {
       // Search for some popular artists to display
-      const popularSearches = ['Drake', 'Taylor Swift', 'The Weeknd', 'Bad Bunny', 'Ariana Grande'];
-      const randomArtist = popularSearches[Math.floor(Math.random() * popularSearches.length)];
+      const randomArtist = POPULAR_ARTIST_NAMES[Math.floor(Math.random() * POPULAR_ARTIST_NAMES.length)];
 
       // Get artists from Spotify
-      const spotifyResults = await searchArtists(randomArtist, 5);
+      const spotifyResults = await searchArtists(randomArtist, MAX_HOMEPAGE_ARTISTS + 1);
 
       // Convert to Artist format
       const convertedArtists: Artist[] = spotifyResults.map((spotifyArtist, index) => ({
@@ -66,8 +66,8 @@ const PopularArtistsSection: React.FC<PopularArtistsSectionProps> = ({
           <ArtistCardSkeleton />
         </>
       ) : (
-        // Show real Spotify artists
-        artists.map((artist: Artist) => (
+        // Show real Spotify artists (limit to MAX_HOMEPAGE_ARTISTS)
+        artists.slice(0, MAX_HOMEPAGE_ARTISTS).map((artist: Artist) => (
           <ArtistCard
             key={artist.id}
             artist={artist}

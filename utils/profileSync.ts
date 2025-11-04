@@ -22,52 +22,66 @@ export async function syncUserProfile(user: User): Promise<void> {
 
     if (existingProfile) {
       // Profile exists, update it
+      const updateData: any = {
+        name: user.name,
+        email: user.email,
+        updated_at: new Date().toISOString(),
+      };
+
+      // Only update profile picture if one is provided
+      if (user.profilePicture) {
+        updateData.profile_picture = user.profilePicture;
+      }
+
       const { error: updateError } = await supabase
         .from('profiles')
-        .update({
-          name: user.name,
-          email: user.email,
-          profile_picture: user.profilePicture,
-          updated_at: new Date().toISOString(),
-        })
+        .update(updateData)
         .eq('id', user.id);
 
       if (updateError) {
         console.error('Error updating profile:', updateError);
       } else {
-        console.log('Profile updated successfully');
       }
     } else {
       // Profile doesn't exist, try to create it (but it might be created by trigger already)
+      const insertData: any = {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+      };
+
+      // Only set profile picture if one is provided, otherwise let DB trigger handle it
+      if (user.profilePicture) {
+        insertData.profile_picture = user.profilePicture;
+      }
+
       const { error: insertError } = await supabase
         .from('profiles')
-        .insert({
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          profile_picture: user.profilePicture,
-        });
+        .insert(insertData);
 
       if (insertError) {
         // Profile might have been created by trigger - just update instead
-        console.log('Profile may exist already, trying update instead');
+        const fallbackUpdateData: any = {
+          name: user.name,
+          email: user.email,
+          updated_at: new Date().toISOString(),
+        };
+
+        // Only update profile picture if one is provided
+        if (user.profilePicture) {
+          fallbackUpdateData.profile_picture = user.profilePicture;
+        }
+
         const { error: updateError } = await supabase
           .from('profiles')
-          .update({
-            name: user.name,
-            email: user.email,
-            profile_picture: user.profilePicture,
-            updated_at: new Date().toISOString(),
-          })
+          .update(fallbackUpdateData)
           .eq('id', user.id);
 
         if (updateError) {
           console.error('Error syncing profile:', updateError);
         } else {
-          console.log('Profile synced via update');
         }
       } else {
-        console.log('Profile created successfully');
       }
     }
   } catch (error) {
@@ -130,7 +144,6 @@ export async function updateUserProfile(
       return false;
     }
 
-    console.log('User profile updated successfully');
     return true;
   } catch (error) {
     console.error('Error in updateUserProfile:', error);

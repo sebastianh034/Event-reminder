@@ -32,14 +32,14 @@ function toRad(degrees: number): number {
 /**
  * Filter events by distance from user location
  */
-export function filterEventsByDistance<T extends { latitude?: number; longitude?: number }>(
+export function filterEventsByDistance<T extends { latitude?: number | null; longitude?: number | null }>(
   events: T[],
   userLat: number,
   userLon: number,
   maxDistance: number
 ): T[] {
   return events.filter((event) => {
-    if (!event.latitude || !event.longitude) return false;
+    if (event.latitude == null || event.longitude == null) return false;
     const distance = calculateDistance(userLat, userLon, event.latitude, event.longitude);
     return distance <= maxDistance;
   });

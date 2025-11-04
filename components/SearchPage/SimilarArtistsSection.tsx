@@ -5,7 +5,7 @@ import {
   FlatList,
   StyleSheet,
 } from 'react-native';
-import { ExtendedArtist } from '../data/ArtistsFakeData';
+import { ExtendedArtist } from '../../types';
 import ArtistResultCard from './ArtistResultCard';
 
 interface SimilarArtistsSectionProps {

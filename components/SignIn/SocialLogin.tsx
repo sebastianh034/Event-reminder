@@ -12,14 +12,12 @@ const SocialLogin: React.FC<SocialLoginProps> = ({
   onGooglePress 
 }) => {
   const handleApplePress = () => {
-    console.log('Apple login pressed');
     if (onApplePress) {
       onApplePress();
     }
   };
 
   const handleGooglePress = () => {
-    console.log('Google login pressed');
     if (onGooglePress) {
       onGooglePress();
     }

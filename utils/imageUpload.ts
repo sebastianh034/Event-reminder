@@ -51,7 +51,6 @@ export async function uploadProfilePicture(
       .from('avatars')
       .getPublicUrl(filePath);
 
-    console.log('Image uploaded successfully:', publicUrl);
     return publicUrl;
   } catch (error) {
     console.error('Error uploading image:', error);
@@ -90,7 +89,6 @@ export async function deleteProfilePicture(userId: string): Promise<boolean> {
       return false;
     }
 
-    console.log('Profile picture deleted successfully');
     return true;
   } catch (error) {
     console.error('Error in deleteProfilePicture:', error);
