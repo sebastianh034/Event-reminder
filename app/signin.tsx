@@ -101,14 +101,8 @@ const SignIn: React.FC = () => {
     setBiometricAvailable(available);
     setBiometricType(getBiometricTypeName(biometricType));
 
-    // If biometrics are enabled and available, prompt immediately
-    if (available) {
-      const enabled = await isBiometricEnabled();
-      console.log('[SignIn] Biometric enabled:', enabled);
-      if (enabled) {
-        promptBiometricAuth();
-      }
-    }
+    // Don't auto-prompt - let user choose between Face ID, Google, or email/password
+    // The Face ID button will be shown in the UI if available and enabled
   };
 
   const promptBiometricAuth = async () => {
@@ -156,6 +150,7 @@ const SignIn: React.FC = () => {
         const userDismissed = await hasUserDismissedPrompt();
 
         if (!biometricEnabled && !userDismissed) {
+          setLoading(false); // Clear loading before showing alert
           Alert.alert(
             `Enable ${biometricType}?`,
             `Use ${biometricType} to sign in quickly next time?`,
@@ -182,10 +177,12 @@ const SignIn: React.FC = () => {
           );
         } else {
           // If biometric already enabled or dismissed, navigate immediately
+          setLoading(false);
           router.replace('/');
         }
       } else {
         // Biometrics not available, navigate to home
+        setLoading(false);
         router.replace('/');
       }
     } catch (error) {
