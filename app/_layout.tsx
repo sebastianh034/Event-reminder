@@ -1,12 +1,12 @@
 import { useEffect, useRef } from 'react';
 import { Stack, router } from 'expo-router';
-import SignIn from './signin';
 import { AuthProvider } from '../context/authcontext';
 import { NotificationProvider } from '../context/notificationContext';
 import { LocationProvider } from '../context/locationContext';
 import { FollowedArtistsProvider } from '../context/followedArtistsContext';
 import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
+import { supabase } from '../utils/supabase';
 import '../Notification-Handler/Notification-Handler';
 
 async function requestPermissions() {
@@ -41,6 +41,42 @@ async function requestPermissions() {
   return true;
 }
 
+async function handleNotificationNavigation(data: any) {
+  if (data.artistId) {
+    try {
+      // Fetch full artist data from database
+      const { data: artist, error } = await supabase
+        .from('artists')
+        .select('id, name, spotify_id, image_url')
+        .eq('id', data.artistId)
+        .single();
+
+      if (error || !artist) {
+        console.error('Error fetching artist for notification:', error);
+        // Fallback: navigate with just the artist name from notification
+        setTimeout(() => {
+          router.push(`/artist/${data.artistId}?name=${data.artist || 'Unknown Artist'}`);
+        }, 100);
+        return;
+      }
+
+      // Navigate with full artist data
+      const artistId = artist.spotify_id || artist.id;
+      const params = new URLSearchParams({
+        name: artist.name,
+        image: artist.image_url || '',
+        followers: '0', // Followers not stored in DB, using default
+      });
+
+      setTimeout(() => {
+        router.push(`/artist/${artistId}?${params.toString()}`);
+      }, 100);
+    } catch (error) {
+      console.error('Error handling notification navigation:', error);
+    }
+  }
+}
+
 export default function RootLayout() {
   const responseListener = useRef<ReturnType<typeof Notifications.addNotificationResponseReceivedListener>>();
 
@@ -49,24 +85,17 @@ export default function RootLayout() {
 
     // Check if app was opened by tapping a notification
     Notifications.getLastNotificationResponseAsync()
-      .then(response => {
+      .then(async response => {
         if (response) {
           const data = response.notification.request.content.data;
-          if (data.artistId) {
-            // Small delay to ensure router is ready
-            setTimeout(() => {
-              router.push(`/artist/${data.artistId}`);
-            }, 100);
-          }
+          await handleNotificationNavigation(data);
         }
       });
 
     // Handle notification taps while app is running
-    responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
+    responseListener.current = Notifications.addNotificationResponseReceivedListener(async response => {
       const data = response.notification.request.content.data;
-      if (data.artistId) {
-        router.push(`/artist/${data.artistId}`);
-      }
+      await handleNotificationNavigation(data);
     });
 
     return () => {
