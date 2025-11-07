@@ -17,7 +17,7 @@
         ],
         "NSCameraUsageDescription": "This app needs access to your camera to take profile pictures.",
         "NSPhotoLibraryUsageDescription": "This app needs access to your photo library to select profile pictures.",
-        "GIDClientID": "633242984536-koe26oobg8h50df0morl6fpghv9tjij4.apps.googleusercontent.com"
+        "GIDClientID": "106273299100-ddlu87570kbolnega143fo61cgrhi205.apps.googleusercontent.com"
       }
     },
     "android": {
@@ -60,7 +60,7 @@
       [
         "@react-native-google-signin/google-signin",
         {
-          "iosUrlScheme": "com.googleusercontent.apps.633242984536-koe26oobg8h50df0morl6fpghv9tjij4"
+          "iosUrlScheme": "com.googleusercontent.apps.106273299100-ddlu87570kbolnega143fo61cgrhi205"
         }
       ]
     ],

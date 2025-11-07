@@ -313,19 +313,17 @@ const SignIn: React.FC = () => {
     try {
       const result = await signInWithGoogle();
 
-      if (result.success && result.userInfo && result.userInfo.data) {
-        // DON'T call signIn() here - the auth context's SIGNED_IN event handler
-        // will automatically load the correct profile from the database
-        // This prevents showing old/incomplete data before the database load completes
-
-        Alert.alert('Success', 'Signed in with Google!', [
-          { text: 'OK', onPress: () => { setLoading(false); router.back(); } }
-        ]);
+      if (result.success && result.user) {
+        // The auth context's SIGNED_IN event already loaded the updated profile
+        // from the database with the Google photo, so we don't need to manually update
+        setLoading(false);
+        router.replace('/');
       } else {
         Alert.alert('Error', result.error || 'Failed to sign in with Google');
         setLoading(false);
       }
     } catch (error) {
+      console.error('Google sign in error:', error);
       Alert.alert('Error', 'An unexpected error occurred');
       setLoading(false);
     }

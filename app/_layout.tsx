@@ -8,6 +8,7 @@ import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
 import { supabase } from '../utils/supabase';
 import '../Notification-Handler/Notification-Handler';
+import { configureGoogleSignIn } from '../utils/googleSignIn';
 
 async function requestPermissions() {
   const { status } = await Notifications.getPermissionsAsync();
@@ -81,6 +82,9 @@ export default function RootLayout() {
   const responseListener = useRef<ReturnType<typeof Notifications.addNotificationResponseReceivedListener>>();
 
   useEffect(() => {
+    // Configure Google Sign-In on app initialization
+    configureGoogleSignIn();
+
     requestPermissions();
 
     // Check if app was opened by tapping a notification
