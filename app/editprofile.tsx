@@ -13,7 +13,7 @@ import { router } from 'expo-router';
 import { useAuth } from '../context/authcontext';
 import { uploadProfilePicture } from '../utils/imageUpload';
 import { updateUserProfile } from '../utils/profileSync';
-import BackButton from '../components/backbutton';
+import BackButton from '../components/BackButton';
 import ProfilePictureEditor from '../components/EditProfile/ProfilePictureEditor';
 import FormInput from '../components/EditProfile/FormInput';
 import ActionButtons from '../components/EditProfile/ActionButtons';

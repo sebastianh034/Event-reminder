@@ -9,7 +9,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../context/authcontext';
 import { router } from 'expo-router';
-import BackButton from '../components/backbutton';
+import BackButton from '../components/BackButton';
 import ProfileCard from '../components/Profile/ProfileCard';
 import ProfileHeader from '../components/Profile/ProfileHeader';
 import StatsCard from '../components/Profile/StatsCard';

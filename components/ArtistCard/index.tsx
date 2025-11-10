@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, Pressable, ImageBackground } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { type Artist } from '../../types';
-import ArtistFollowButton from './FollowButton';
+import ArtistFollowButton from '../FollowButton';
 import * as Haptics from 'expo-haptics';
 
 interface ArtistCardProps {

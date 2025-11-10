@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable, Linking, Alert } from 'react-native';
-import { type Event, formatEventDate, getEventStatusColor, getEventStatusLabel } from '../utils/eventsService';
+import { type Event, formatEventDate, getEventStatusColor, getEventStatusLabel } from '../../utils/eventsService';
 import * as Haptics from 'expo-haptics';
 
 interface EventCardProps {

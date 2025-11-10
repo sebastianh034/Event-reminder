@@ -8,7 +8,7 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import BackButton from '../components/backbutton';
+import BackButton from '../components/BackButton';
 import SettingCard from '../components/Settings/SettingCard';
 import SettingToggle from '../components/Settings/SettingToggle';
 import SettingInfo from '../components/Settings/SettingInfo';

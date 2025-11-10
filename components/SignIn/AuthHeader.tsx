@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import BackButton from '../backbutton';
+import BackButton from '../BackButton';
 
 interface AuthHeaderProps {
   title: string;

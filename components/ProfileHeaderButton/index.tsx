@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, Pressable, Image, StyleSheet } from 'react-native';
-import { useAuth } from '../context/authcontext';
+import { useAuth } from '../../context/authcontext';
 import { router } from 'expo-router';
 
 interface ProfileHeaderProps {

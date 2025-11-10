@@ -4,7 +4,7 @@ import {
   Text,
   StyleSheet,
 } from 'react-native';
-import BackButton from '../backbutton';
+import BackButton from '../BackButton';
 
 const SearchHeader: React.FC = () => {
   return (

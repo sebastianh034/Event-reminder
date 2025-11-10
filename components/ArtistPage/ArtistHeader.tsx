@@ -7,7 +7,7 @@ import {
   Pressable,
 } from 'react-native';
 import { type Artist } from '../../types';
-import BackButton from '../backbutton';
+import BackButton from '../BackButton';
 import ArtistFollowButton from '../FollowButton';
 
 interface ArtistHeaderProps {
