@@ -12,21 +12,28 @@ import BackButton from '../components/BackButton';
 import SettingCard from '../components/Settings/SettingCard';
 import SettingToggle from '../components/Settings/SettingToggle';
 import SettingInfo from '../components/Settings/SettingInfo';
+import SettingButton from '../components/Settings/SettingButton';
+import ReportIssueModal from '../components/Settings/ReportIssueModal';
 import { useNotifications } from '../context/notificationContext';
 import { useLocation } from '../context/locationContext';
+import { useAuth } from '../context/authcontext';
 import {
   checkBiometricAvailability,
   isBiometricEnabled,
   disableBiometricAuth,
   getBiometricTypeName,
 } from '../utils/biometricAuth';
+import { createIssueReport } from '../utils/issueReportService';
+import type { IssueData } from '../components/Settings/ReportIssueModal';
 
 export default function SettingsPage() {
   const { notificationsEnabled, toggleNotifications } = useNotifications();
   const { locationEnabled, toggleLocation } = useLocation();
+  const { user } = useAuth();
   const [biometricEnabled, setBiometricEnabled] = useState(false);
   const [biometricAvailable, setBiometricAvailable] = useState(false);
   const [biometricType, setBiometricType] = useState('Biometric');
+  const [showReportModal, setShowReportModal] = useState(false);
 
   useEffect(() => {
     checkBiometrics();
@@ -70,6 +77,17 @@ export default function SettingsPage() {
         'Please sign in again to enable biometric authentication.',
         [{ text: 'OK' }]
       );
+    }
+  };
+
+  const handleReportIssue = () => {
+    setShowReportModal(true);
+  };
+
+  const handleSubmitIssue = async (data: IssueData) => {
+    const success = await createIssueReport(data, user?.id);
+    if (!success) {
+      throw new Error('Failed to create issue report');
     }
   };
 
@@ -124,6 +142,16 @@ export default function SettingsPage() {
               </SettingCard>
             )}
 
+            {/* Support */}
+            <SettingCard title="Support">
+              <SettingButton
+                icon="bug-outline"
+                title="Report an Issue"
+                description="Report a bugs"
+                onPress={handleReportIssue}
+              />
+            </SettingCard>
+
             {/* About */}
             <SettingCard title="About">
               <SettingInfo
@@ -135,6 +163,13 @@ export default function SettingsPage() {
           </ScrollView>
         </SafeAreaView>
       </LinearGradient>
+
+      {/* Report Issue Modal */}
+      <ReportIssueModal
+        visible={showReportModal}
+        onClose={() => setShowReportModal(false)}
+        onSubmit={handleSubmitIssue}
+      />
     </View>
   );
 }
