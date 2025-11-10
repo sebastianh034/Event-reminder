@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, Pressable } from 'react-native';
+import { View, Text, StyleSheet, Pressable, Linking, Alert } from 'react-native';
 import { type Event, formatEventDate, getEventStatusColor, getEventStatusLabel } from '../utils/eventsService';
 import * as Haptics from 'expo-haptics';
 
@@ -13,6 +13,27 @@ const EventCard: React.FC<EventCardProps> = ({ event, onPress }) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     if (onPress) {
       onPress();
+    }
+  };
+
+  const handleTicketPress = async (e: any) => {
+    e.stopPropagation(); // Prevent card press
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+
+    if (event.ticket_url) {
+      try {
+        const supported = await Linking.canOpenURL(event.ticket_url);
+        if (supported) {
+          await Linking.openURL(event.ticket_url);
+        } else {
+          Alert.alert('Error', 'Unable to open the ticket link');
+        }
+      } catch (error) {
+        console.error('Error opening ticket URL:', error);
+        Alert.alert('Error', 'Failed to open the ticket link');
+      }
+    } else {
+      Alert.alert('No Tickets', 'Ticket information is not available for this event');
     }
   };
 
@@ -41,13 +62,26 @@ const EventCard: React.FC<EventCardProps> = ({ event, onPress }) => {
           )}
         </View>
 
-        {/* Right side - Status Badge */}
+        {/* Right side - Status Badge and Tickets Button */}
         <View style={styles.rightContent}>
           <View style={[styles.statusBadge, { backgroundColor: statusColor }]}>
             <Text style={styles.statusText}>
               {statusLabel}
             </Text>
           </View>
+
+          {/* Go to Tickets Button */}
+          {event.ticket_url && (
+            <Pressable
+              style={({ pressed }) => [
+                styles.ticketButton,
+                pressed && styles.ticketButtonPressed
+              ]}
+              onPress={handleTicketPress}
+            >
+              <Text style={styles.ticketButtonText}>Go to Tickets</Text>
+            </Pressable>
+          )}
         </View>
       </View>
     </Pressable>
@@ -115,6 +149,24 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
     textAlign: 'center',
+    color: 'white',
+  },
+  ticketButton: {
+    backgroundColor: '#3b82f6',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 12,
+    marginTop: 8,
+    minWidth: 80,
+    alignItems: 'center',
+  },
+  ticketButtonPressed: {
+    backgroundColor: '#2563eb',
+    transform: [{ scale: 0.95 }],
+  },
+  ticketButtonText: {
+    fontSize: 11,
+    fontWeight: '600',
     color: 'white',
   },
 });

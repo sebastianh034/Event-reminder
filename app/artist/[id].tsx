@@ -5,6 +5,8 @@ import {
   StatusBar,
   ScrollView,
   RefreshControl,
+  Linking,
+  Alert,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useLocalSearchParams } from 'expo-router';
