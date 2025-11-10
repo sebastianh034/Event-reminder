@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, StyleSheet, Image, TouchableOpacity, Alert, Platform, ActionSheetIOS } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Alert, Platform, ActionSheetIOS } from 'react-native';
+import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import * as Haptics from 'expo-haptics';
@@ -88,7 +89,9 @@ const ProfilePictureEditor: React.FC<ProfilePictureEditorProps> = ({
       <Image
         source={{ uri: profilePicture || undefined }}
         style={styles.profilePicture}
-        defaultSource={require('../../assets/images/icon.png')}
+        contentFit="cover"
+        transition={200}
+        placeholder={require('../../assets/images/icon.png')}
       />
       <TouchableOpacity
         style={styles.changePictureButton}

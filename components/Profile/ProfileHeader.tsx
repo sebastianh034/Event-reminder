@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet, Image } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
+import { Image } from 'expo-image';
 
 interface ProfileHeaderProps {
   name: string;
@@ -14,7 +15,12 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
 }) => {
   return (
     <View style={styles.userInfo}>
-      <Image source={{ uri: profilePicture }} style={styles.profileImage} />
+      <Image
+        source={{ uri: profilePicture }}
+        style={styles.profileImage}
+        contentFit="cover"
+        transition={200}
+      />
       <View style={styles.userDetails}>
         <Text style={styles.userName}>{name}</Text>
         <Text style={styles.userEmail}>{email}</Text>

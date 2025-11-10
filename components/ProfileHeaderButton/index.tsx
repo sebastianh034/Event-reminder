@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, Pressable, Image, StyleSheet } from 'react-native';
+import { View, Text, Pressable, StyleSheet } from 'react-native';
+import { Image } from 'expo-image';
 import { useAuth } from '../../context/authcontext';
 import { router } from 'expo-router';
 
@@ -29,6 +30,8 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({ onSignInPress }) => {
           <Image
             source={{ uri: user?.profilePicture || `https://api.dicebear.com/7.x/notionists-neutral/svg?seed=${user?.email || 'default'}` }}
             style={styles.profileImage}
+            contentFit="cover"
+            transition={200}
           />
         </Pressable>
       ) : (
