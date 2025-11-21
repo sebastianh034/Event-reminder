@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   StyleSheet,
@@ -12,37 +12,15 @@ import { router } from 'expo-router';
 import BackButton from '../components/BackButton';
 import ProfileCard from '../components/Profile/ProfileCard';
 import ProfileHeader from '../components/Profile/ProfileHeader';
-import StatsCard from '../components/Profile/StatsCard';
 import ConnectedAppButton from '../components/Profile/ConnectedAppButton';
 import ActionButton from '../components/Profile/ActionButton';
-import { getFollowedArtistsEvents, getPastFollowedArtistsEvents } from '../utils/eventsService';
+import EventsCalendar from '../components/EventsCalendar';
+import FollowedArtists from '../components/FollowedArtists';
 
 export default function ProfilePage() {
   const { user, signOut } = useAuth();
   const [spotifyConnected, setSpotifyConnected] = useState(false);
   const [appleMusicConnected, setAppleMusicConnected] = useState(false);
-  const [upcomingEventsCount, setUpcomingEventsCount] = useState(0);
-  const [pastEventsCount, setPastEventsCount] = useState(0);
-
-  // Load stats from Supabase
-  useEffect(() => {
-    if (user?.id) {
-      loadStats();
-    }
-  }, [user?.id]);
-
-  const loadStats = async () => {
-    if (!user?.id) return;
-
-    try {
-      const upcomingEvents = await getFollowedArtistsEvents(user.id);
-      const pastEvents = await getPastFollowedArtistsEvents(user.id);
-      setUpcomingEventsCount(upcomingEvents.length);
-      setPastEventsCount(pastEvents.length);
-    } catch (error) {
-      console.error('Error loading stats:', error);
-    }
-  };
 
   const handleEditProfile = () => {
     router.push('/editprofile');
@@ -122,13 +100,19 @@ export default function ProfilePage() {
               />
             </ProfileCard>
 
-            {/* Stats Card */}
-            <ProfileCard title="Stats">
-              <StatsCard
-                upcomingEvents={upcomingEventsCount}
-                pastEvents={pastEventsCount}
-              />
-            </ProfileCard>
+            {/* Followed Artists Card */}
+            {user?.id && (
+              <ProfileCard title="Followed Artists">
+                <FollowedArtists userId={user.id} />
+              </ProfileCard>
+            )}
+
+            {/* Events Calendar Card */}
+            {user?.id && (
+              <ProfileCard title="Upcoming Events">
+                <EventsCalendar userId={user.id} />
+              </ProfileCard>
+            )}
 
             {/* Connected Apps Card */}
             <ProfileCard title="Connected Apps">

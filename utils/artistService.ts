@@ -218,6 +218,43 @@ export async function getFollowedArtists(userId: string): Promise<string[]> {
 }
 
 /**
+ * Get all artists the user is following with full details
+ */
+export async function getFollowedArtistsWithDetails(userId: string): Promise<any[]> {
+  try {
+    const { data, error } = await supabase
+      .from('followed_artists')
+      .select(`
+        artists (
+          id,
+          name,
+          spotify_id,
+          genre,
+          image_url,
+          followers_count,
+          popularity
+        )
+      `)
+      .eq('user_id', userId);
+
+    if (error) {
+      console.error('[Follow] Error fetching followed artists with details:', error);
+      return [];
+    }
+
+    // Extract artist objects from the nested data
+    const artists = data
+      ?.map((item: any) => item.artists)
+      .filter((artist: any) => artist !== null) || [];
+
+    return artists;
+  } catch (error) {
+    console.error('[Follow] Exception in getFollowedArtistsWithDetails:', error);
+    return [];
+  }
+}
+
+/**
  * Check if user is following a specific artist
  */
 export async function isFollowingArtist(

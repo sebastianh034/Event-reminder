@@ -1,12 +1,11 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import {
   View,
   StyleSheet,
   StatusBar,
   ScrollView,
   RefreshControl,
-  Linking,
-  Alert,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useLocalSearchParams } from 'expo-router';
@@ -28,10 +27,14 @@ import {
 import { fetchAndSaveArtistEvents } from '../../utils/eventsAPI';
 import { supabase } from '../../utils/supabase';
 import { DEFAULT_SEARCH_RADIUS_MILES } from '../../constants';
+import { useAuth } from '../../context/authcontext';
+import { useFollowedArtists } from '../../context/followedArtistsContext';
 
 export default function ArtistPage() {
   const params = useLocalSearchParams();
   const { id, name, image, followers } = params;
+  const { user } = useAuth();
+  const { refreshFollowedArtists } = useFollowedArtists();
   const [maxDistance, setMaxDistance] = useState(DEFAULT_SEARCH_RADIUS_MILES);
   const { location, locationEnabled, permissionGranted, refreshLocation } = useLocation();
   const { notificationsEnabled } = useNotifications();
@@ -47,13 +50,23 @@ export default function ArtistPage() {
     name: (name as string) || 'Unknown Artist',
     image: (image as string) || 'https://via.placeholder.com/300',
     followers: (followers as string) || '0',
-    isFollowing: false,
+    isFollowing: false, // Will be determined by context in FollowButton
   };
 
   // Load events when component mounts
   useEffect(() => {
     loadEvents();
   }, [artist.name]);
+
+  // Refresh followed artists context every time the page comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      if (user?.id) {
+        refreshFollowedArtists();
+      }
+    }, [user?.id])
+  );
+
 
   const loadEvents = async () => {
     if (!artist.name) return;

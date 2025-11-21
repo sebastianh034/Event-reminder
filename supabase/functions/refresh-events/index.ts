@@ -93,6 +93,17 @@ Deno.serve(async (req) => {
         })
 
         if (eventsToUpsert.length > 0) {
+          // Check if these are new events before upserting
+          const existingEventIds = new Set()
+          const { data: existingEvents } = await supabaseClient
+            .from('events')
+            .select('external_id')
+            .in('external_id', eventsToUpsert.map(e => e.external_id))
+
+          if (existingEvents) {
+            existingEvents.forEach(e => existingEventIds.add(e.external_id))
+          }
+
           const { error: upsertError } = await supabaseClient
             .from('events')
             .upsert(eventsToUpsert, {
@@ -106,6 +117,39 @@ Deno.serve(async (req) => {
           } else {
             successCount++
             console.log(`✓ Refreshed ${eventsToUpsert.length} events for ${artist.name}`)
+
+            // Send push notification for new events (not existing ones)
+            const newEvents = eventsToUpsert.filter(e => !existingEventIds.has(e.external_id))
+            if (newEvents.length > 0) {
+              try {
+                const notificationResponse = await fetch(
+                  `${Deno.env.get('SUPABASE_URL')}/functions/v1/send-push-notifications`,
+                  {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`,
+                    },
+                    body: JSON.stringify({
+                      artistName: artist.name,
+                      eventDetails: {
+                        venue: newEvents[0].venue,
+                        location: newEvents[0].location,
+                        date: newEvents[0].event_date,
+                      },
+                    }),
+                  }
+                )
+
+                if (notificationResponse.ok) {
+                  console.log(`✓ Sent push notifications for ${artist.name}`)
+                } else {
+                  console.log(`Failed to send push notifications for ${artist.name}`)
+                }
+              } catch (notifError) {
+                console.log(`Error sending push notifications for ${artist.name}:`, notifError)
+              }
+            }
           }
         } else {
           successCount++

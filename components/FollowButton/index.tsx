@@ -40,13 +40,11 @@ const ArtistFollowButton: React.FC<ArtistFollowButtonProps> = ({
   const { user } = useAuth();
   const { isFollowing: isFollowingFromContext, addFollowedArtist, removeFollowedArtist } = useFollowedArtists();
 
-  // Check if following from context (real-time state)
   const isFollowing = spotifyId ? isFollowingFromContext(spotifyId) : initialFollowState;
 
   const handlePress = async () => {
     if (isLoading) return;
 
-    // If user is not signed in, prompt them to create an account
     if (!user) {
       Alert.alert(
         'Sign In Required',
@@ -66,7 +64,6 @@ const ArtistFollowButton: React.FC<ArtistFollowButtonProps> = ({
       let success = false;
 
       if (newFollowState) {
-        // Follow the artist
         if (!spotifyId) {
           console.error('Cannot follow artist: Spotify ID is missing');
           return;
@@ -86,7 +83,6 @@ const ArtistFollowButton: React.FC<ArtistFollowButtonProps> = ({
           Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         }
       } else {
-        // Unfollow the artist
         if (!spotifyId) {
           console.error('Cannot unfollow artist: Spotify ID is missing');
           return;
@@ -100,14 +96,12 @@ const ArtistFollowButton: React.FC<ArtistFollowButtonProps> = ({
       }
 
       if (success) {
-        // Update the context
         if (newFollowState && spotifyId) {
           addFollowedArtist(spotifyId);
         } else if (!newFollowState && spotifyId) {
           removeFollowedArtist(spotifyId);
         }
 
-        // Call the optional callback
         if (onFollowChange) {
           onFollowChange(artistId, newFollowState);
         }
@@ -119,7 +113,6 @@ const ArtistFollowButton: React.FC<ArtistFollowButtonProps> = ({
     }
   };
 
-  // Get size-specific styles
   const getSizeStyles = () => {
     switch (size) {
       case 'small':
@@ -132,7 +125,7 @@ const ArtistFollowButton: React.FC<ArtistFollowButtonProps> = ({
           button: styles.largeButton,
           text: styles.largeText,
         };
-      default: // medium
+      default: 
         return {
           button: styles.mediumButton,
           text: styles.mediumText,
@@ -201,7 +194,6 @@ const styles = StyleSheet.create({
   followingText: {
     color: 'white',
   },
-  // Small size
   smallButton: {
     paddingHorizontal: 12,
     paddingVertical: 4,
@@ -210,7 +202,6 @@ const styles = StyleSheet.create({
   smallText: {
     fontSize: 12,
   },
-  // Medium size
   mediumButton: {
     paddingHorizontal: 16,
     paddingVertical: 6,
@@ -219,7 +210,6 @@ const styles = StyleSheet.create({
   mediumText: {
     fontSize: 14,
   },
-  // Large size
   largeButton: {
     paddingHorizontal: 20,
     paddingVertical: 8,

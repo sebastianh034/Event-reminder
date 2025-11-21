@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   StyleSheet,
@@ -14,6 +14,7 @@ import { useAuth } from '../context/authcontext';
 import { useFocusEffect } from '@react-navigation/native';
 import * as Notifications from 'expo-notifications';
 import { useNotifications } from '../context/notificationContext';
+import { useFollowedArtists } from '../context/followedArtistsContext';
 import HeaderSection from '../components/HomePage/HeaderSection';
 import SearchBar from '../components/HomePage/SearchBar';
 import ContentContainer from '../components/HomePage/ContentContainer';
@@ -26,6 +27,7 @@ const HomePage: React.FC = () => {
   // Use auth context instead of simulated state
   const { isSignedIn, user } = useAuth();
   const { notificationsEnabled } = useNotifications();
+  const { refreshFollowedArtists } = useFollowedArtists();
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [events, setEvents] = useState<SupabaseEvent[]>([]);
   const [loading, setLoading] = useState(false);
@@ -37,6 +39,8 @@ const HomePage: React.FC = () => {
       setSearchQuery('');
       if (isSignedIn && user?.id) {
         loadEvents();
+        // Refresh followed artists to ensure follow buttons show correct state
+        refreshFollowedArtists();
       }
     }, [isSignedIn, user?.id])
   );
