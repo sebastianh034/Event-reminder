@@ -1,14 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   StyleSheet,
   ScrollView,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../context/authcontext';
 import { router } from 'expo-router';
+import { useFocusEffect } from '@react-navigation/native';
 import BackButton from '../components/BackButton';
 import ProfileCard from '../components/Profile/ProfileCard';
 import ProfileHeader from '../components/Profile/ProfileHeader';
@@ -16,11 +18,34 @@ import ConnectedAppButton from '../components/Profile/ConnectedAppButton';
 import ActionButton from '../components/Profile/ActionButton';
 import EventsCalendar from '../components/EventsCalendar';
 import FollowedArtists from '../components/FollowedArtists';
+import SpotifyArtistSelector from '../components/SpotifyArtistSelector';
+import { connectSpotify, fetchFollowedArtists } from '../utils/spotifyOAuth';
+import {
+  isSpotifyConnected,
+  saveSpotifyConnection,
+  disconnectSpotify,
+} from '../utils/spotifyConnectionService';
 
 export default function ProfilePage() {
   const { user, signOut } = useAuth();
   const [spotifyConnected, setSpotifyConnected] = useState(false);
   const [appleMusicConnected, setAppleMusicConnected] = useState(false);
+  const [showArtistSelector, setShowArtistSelector] = useState(false);
+  const [spotifyArtists, setSpotifyArtists] = useState<any[]>([]);
+  const [connectingSpotify, setConnectingSpotify] = useState(false);
+
+  // Check Spotify connection status on mount
+  useEffect(() => {
+    if (user?.id) {
+      checkSpotifyConnection();
+    }
+  }, [user?.id]);
+
+  const checkSpotifyConnection = async () => {
+    if (!user?.id) return;
+    const connected = await isSpotifyConnected(user.id);
+    setSpotifyConnected(connected);
+  };
 
   const handleEditProfile = () => {
     router.push('/editprofile');
@@ -48,17 +73,84 @@ export default function ProfilePage() {
     );
   };
 
-  const handleConnectSpotify = () => {
+  const handleConnectSpotify = async () => {
     if (spotifyConnected) {
-      Alert.alert('Disconnect Spotify', 'Are you sure?', [
+      // Handle disconnect
+      Alert.alert('Disconnect Spotify', 'Are you sure you want to disconnect your Spotify account?', [
         { text: 'Cancel', style: 'cancel' },
         {
           text: 'Disconnect',
-          onPress: () => setSpotifyConnected(false),
+          style: 'destructive',
+          onPress: async () => {
+            if (!user?.id) return;
+            const success = await disconnectSpotify(user.id);
+            if (success) {
+              setSpotifyConnected(false);
+              Alert.alert('Disconnected', 'Your Spotify account has been disconnected.');
+            } else {
+              Alert.alert('Error', 'Failed to disconnect Spotify. Please try again.');
+            }
+          },
         },
       ]);
     } else {
-      Alert.alert('Connect Spotify', 'Spotify integration coming soon!');
+      // Handle connect
+      if (!user?.id) {
+        Alert.alert('Error', 'You must be signed in to connect Spotify.');
+        return;
+      }
+
+      setConnectingSpotify(true);
+
+      try {
+        // Start OAuth flow
+        const authResult = await connectSpotify();
+
+        if (!authResult) {
+          Alert.alert('Cancelled', 'Spotify connection was cancelled.');
+          setConnectingSpotify(false);
+          return;
+        }
+
+        // Save connection to database
+        const saved = await saveSpotifyConnection(
+          user.id,
+          authResult.spotifyUserId,
+          authResult.accessToken,
+          authResult.refreshToken,
+          authResult.expiresIn
+        );
+
+        if (!saved) {
+          Alert.alert('Error', 'Failed to save Spotify connection. Please try again.');
+          setConnectingSpotify(false);
+          return;
+        }
+
+        // Fetch followed artists
+        const artists = await fetchFollowedArtists(authResult.accessToken);
+
+        if (artists.length === 0) {
+          Alert.alert(
+            'No Artists Found',
+            "We couldn't find any followed artists on your Spotify account.",
+            [{ text: 'OK' }]
+          );
+          setSpotifyConnected(true);
+          setConnectingSpotify(false);
+          return;
+        }
+
+        // Show artist selector modal
+        setSpotifyArtists(artists);
+        setSpotifyConnected(true);
+        setConnectingSpotify(false);
+        setShowArtistSelector(true);
+      } catch (error) {
+        console.error('[Profile] Error connecting Spotify:', error);
+        Alert.alert('Error', 'Failed to connect to Spotify. Please try again.');
+        setConnectingSpotify(false);
+      }
     }
   };
 
@@ -160,6 +252,16 @@ export default function ProfilePage() {
           </ScrollView>
         </SafeAreaView>
       </LinearGradient>
+
+      {/* Spotify Artist Selector Modal */}
+      {user?.id && (
+        <SpotifyArtistSelector
+          visible={showArtistSelector}
+          artists={spotifyArtists}
+          onClose={() => setShowArtistSelector(false)}
+          userId={user.id}
+        />
+      )}
     </View>
   );
 }
