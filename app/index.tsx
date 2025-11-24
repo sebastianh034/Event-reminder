@@ -91,22 +91,8 @@ const HomePage: React.FC = () => {
     }
   };
 
-  const handleEventPress = async (event: SupabaseEvent): Promise<void> => {
-    // Only send notification if enabled
-    if (notificationsEnabled) {
-      await Notifications.scheduleNotificationAsync({
-        content: {
-          title: `${event.artist_name} - ${event.status}`,
-          body: `${event.venue} • ${event.event_date}\n${event.location}`,
-          data: {
-            eventId: event.id,
-            artist: event.artist_name,
-            artistId: event.artist_id
-          },
-        },
-        trigger: null,
-      });
-    }
+  const handleEventPress = (event: SupabaseEvent): void => {
+    // Event press handler - can be used for navigation or other actions in the future
   };
 
 
