@@ -31,6 +31,7 @@ const PastEventsSection: React.FC<PastEventsSectionProps> = ({
             key={`past-${event.id}`}
             event={event}
             onPress={() => onEventPress(event)}
+            isPastEvent={true}
           />
         ))
       ) : (

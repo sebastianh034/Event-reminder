@@ -6,9 +6,10 @@ import * as Haptics from 'expo-haptics';
 interface EventCardProps {
   event: Event;
   onPress?: () => void;
+  isPastEvent?: boolean;
 }
 
-const EventCard: React.FC<EventCardProps> = ({ event, onPress }) => {
+const EventCard: React.FC<EventCardProps> = ({ event, onPress, isPastEvent = false }) => {
   const handlePress = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     if (onPress) {
@@ -63,26 +64,28 @@ const EventCard: React.FC<EventCardProps> = ({ event, onPress }) => {
         </View>
 
         {/* Right side - Status Badge and Tickets Button */}
-        <View style={styles.rightContent}>
-          <View style={[styles.statusBadge, { backgroundColor: statusColor }]}>
-            <Text style={styles.statusText}>
-              {statusLabel}
-            </Text>
-          </View>
+        {!isPastEvent && (
+          <View style={styles.rightContent}>
+            <View style={[styles.statusBadge, { backgroundColor: statusColor }]}>
+              <Text style={styles.statusText}>
+                {statusLabel}
+              </Text>
+            </View>
 
-          {/* Go to Tickets Button */}
-          {event.ticket_url && (
-            <Pressable
-              style={({ pressed }) => [
-                styles.ticketButton,
-                pressed && styles.ticketButtonPressed
-              ]}
-              onPress={handleTicketPress}
-            >
-              <Text style={styles.ticketButtonText}>Go to Tickets</Text>
-            </Pressable>
-          )}
-        </View>
+            {/* Go to Tickets Button */}
+            {event.ticket_url && (
+              <Pressable
+                style={({ pressed }) => [
+                  styles.ticketButton,
+                  pressed && styles.ticketButtonPressed
+                ]}
+                onPress={handleTicketPress}
+              >
+                <Text style={styles.ticketButtonText}>Go to Tickets</Text>
+              </Pressable>
+            )}
+          </View>
+        )}
       </View>
     </Pressable>
   );
