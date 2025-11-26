@@ -117,6 +117,20 @@ const EventsCalendar: React.FC<EventsCalendarProps> = ({ userId }) => {
   };
 
   const formatDate = (dateString: string) => {
+    // Parse YYYY-MM-DD format directly to avoid timezone issues
+    const parts = dateString.split('-');
+    if (parts.length === 3) {
+      const year = parts[0];
+      const month = parseInt(parts[1], 10) - 1; // months are 0-indexed
+      const day = parseInt(parts[2], 10);
+      const date = new Date(parseInt(year), month, day);
+      return date.toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+      });
+    }
+    // Fallback for other formats
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', {
       month: 'short',

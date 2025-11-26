@@ -73,8 +73,8 @@ const HomePage: React.FC = () => {
     router.push({
       pathname: `/artist/[id]`,
       params: {
-        id: artist.id.toString(),
-        spotifyId: artist.id.toString(),
+        id: artist.spotifyId || artist.id.toString(),
+        spotifyId: artist.spotifyId || artist.id.toString(),
         name: artist.name,
         image: artist.image,
         followers: artist.followers,

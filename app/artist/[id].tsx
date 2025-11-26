@@ -1,5 +1,4 @@
-import React, { useState, useMemo, useEffect, useCallback } from 'react';
-import { useFocusEffect } from '@react-navigation/native';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   View,
   StyleSheet,
@@ -17,8 +16,6 @@ import PastEventsSection from '../../components/ArtistPage/PastEventsSection';
 import DistanceFilter from '../../components/ArtistPage/DistanceFilter';
 import { useLocation } from '../../context/locationContext';
 import { filterEventsByDistance } from '../../utils/distance';
-import * as Notifications from 'expo-notifications';
-import { useNotifications } from '../../context/notificationContext';
 import {
   getEventsByArtistName,
   getPastEventsByArtistName,
@@ -27,17 +24,12 @@ import {
 import { fetchAndSaveArtistEvents } from '../../utils/eventsAPI';
 import { supabase } from '../../utils/supabase';
 import { DEFAULT_SEARCH_RADIUS_MILES } from '../../constants';
-import { useAuth } from '../../context/authcontext';
-import { useFollowedArtists } from '../../context/followedArtistsContext';
 
 export default function ArtistPage() {
   const params = useLocalSearchParams();
   const { id, name, image, followers } = params;
-  const { user } = useAuth();
-  const { refreshFollowedArtists } = useFollowedArtists();
   const [maxDistance, setMaxDistance] = useState(DEFAULT_SEARCH_RADIUS_MILES);
   const { location, locationEnabled, permissionGranted, refreshLocation } = useLocation();
-  const { notificationsEnabled } = useNotifications();
   const [allEvents, setAllEvents] = useState<SupabaseEvent[]>([]);
   const [allPastEvents, setAllPastEvents] = useState<SupabaseEvent[]>([]);
   const [loading, setLoading] = useState(false);
@@ -58,15 +50,10 @@ export default function ArtistPage() {
     loadEvents();
   }, [artist.name]);
 
-  // Refresh followed artists context every time the page comes into focus
-  useFocusEffect(
-    useCallback(() => {
-      if (user?.id) {
-        refreshFollowedArtists();
-      }
-    }, [user?.id])
-  );
-
+  // Note: We don't refresh followed artists here because:
+  // 1. The context already loads on app start
+  // 2. The context updates optimistically when following/unfollowing
+  // 3. Refreshing here would overwrite optimistic updates before the database write completes
 
   const loadEvents = async () => {
     if (!artist.name) return;

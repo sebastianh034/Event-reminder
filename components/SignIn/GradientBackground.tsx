@@ -1,5 +1,5 @@
 import React, { ReactNode } from 'react';
-import { View, StyleSheet, ScrollView } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -19,13 +19,9 @@ const GradientBackground: React.FC<GradientBackgroundProps> = ({ children }) => 
         style={styles.backgroundGradient}
       >
         <SafeAreaView style={styles.safeArea} edges={['top']}>
-          <ScrollView
-            contentContainerStyle={styles.scrollContent}
-            showsVerticalScrollIndicator={false}
-            keyboardShouldPersistTaps="handled"
-          >
+          <View style={styles.content}>
             {children}
-          </ScrollView>
+          </View>
         </SafeAreaView>
       </LinearGradient>
     </View>
@@ -43,10 +39,11 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
   },
-  scrollContent: {
-    flexGrow: 1,
+  content: {
+    flex: 1,
     paddingHorizontal: 24,
-    paddingBottom: 40,
+    paddingBottom: 24,
+    justifyContent: 'space-between',
   },
 });
 

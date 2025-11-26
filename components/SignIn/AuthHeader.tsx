@@ -20,23 +20,23 @@ const AuthHeader: React.FC<AuthHeaderProps> = ({ title, subtitle }) => {
 const styles = StyleSheet.create({
   header: {
     alignItems: 'center',
-    marginBottom: 40,
+    marginBottom: 24,
     position: 'relative',
-    paddingTop: 15,
+    paddingTop: 10,
   },
   title: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: '700',
     color: '#ffffff',
     textAlign: 'center',
-    marginBottom: 12,
-    lineHeight: 34,
+    marginBottom: 8,
+    lineHeight: 30,
   },
   subtitle: {
-    fontSize: 16,
+    fontSize: 14,
     color: 'rgba(255, 255, 255, 0.8)',
     textAlign: 'center',
-    lineHeight: 22,
+    lineHeight: 20,
   },
 });
 

@@ -48,12 +48,12 @@ const SocialLogin: React.FC<SocialLoginProps> = ({
 
 const styles = StyleSheet.create({
   socialContainer: {
-    marginTop: 20,
+    marginTop: 12,
   },
   divider: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 14,
   },
   socialIcon: {
   marginRight: 8,
@@ -65,24 +65,24 @@ const styles = StyleSheet.create({
   },
   dividerText: {
     color: 'rgba(255, 255, 255, 0.8)',
-    fontSize: 14,
-    paddingHorizontal: 16,
+    fontSize: 13,
+    paddingHorizontal: 12,
   },
   socialButtons: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    gap: 12,
+    gap: 10,
   },
   socialButton: {
     flex: 1,
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
     borderRadius: 12,
-    paddingVertical: 12,
+    paddingVertical: 11,
     alignItems: 'center',
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.2)',
     flexDirection: 'row',
-    justifyContent: 'center', 
+    justifyContent: 'center',
   },
   socialButtonPressed: {
     opacity: 0.8,

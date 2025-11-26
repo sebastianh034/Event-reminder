@@ -1,14 +1,14 @@
 {
   "expo": {
-    "name": "Event Reminder",
-    "slug": "event-reminder",
+    "name": "Event Smart",
+    "slug": "my-app",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
-    "description": "Never miss a concert! Get notified when your favorite artists announce new tour dates.",
+    "description": "Never miss a concert! Track your favorite artists and get notified about new tour dates near you.",
     "privacy": "public",
     "ios": {
       "supportsTablet": true,

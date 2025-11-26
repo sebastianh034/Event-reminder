@@ -26,16 +26,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 32,
+    marginBottom: 16,
   },
   toggleText: {
     color: 'rgba(255, 255, 255, 0.8)',
-    fontSize: 14,
+    fontSize: 13,
     marginRight: 6,
   },
   toggleButton: {
     color: '#22c55e',
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '600',
   },
 });
