@@ -10,17 +10,13 @@ import ArtistCardSkeleton from '../skeletons/ArtistCardSkeleton';
 
 interface SearchResultsSectionProps {
   searchResults: ExtendedArtist[];
-  followedArtists: Set<number>;
   onArtistPress: (artist: ExtendedArtist) => void;
-  onToggleFollow: (artistId: number) => void;
   isSearching?: boolean;
 }
 
 const SearchResultsSection: React.FC<SearchResultsSectionProps> = ({
   searchResults,
-  followedArtists,
   onArtistPress,
-  onToggleFollow,
   isSearching = false,
 }) => {
   return (
@@ -43,8 +39,6 @@ const SearchResultsSection: React.FC<SearchResultsSectionProps> = ({
             <ArtistResultCard
               artist={item}
               onPress={onArtistPress}
-              onFollowPress={onToggleFollow}
-              isFollowed={followedArtists.has(item.id)}
             />
           )}
           keyExtractor={(item) => item.id.toString()}

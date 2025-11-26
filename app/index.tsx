@@ -92,9 +92,8 @@ const HomePage: React.FC = () => {
   };
 
   const handleEventPress = (event: SupabaseEvent): void => {
-    // Event press handler - can be used for navigation or other actions in the future
+    // TODO: Implement event detail navigation
   };
-
 
   return (
     <View style={styles.container}>

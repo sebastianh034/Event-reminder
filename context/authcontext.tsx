@@ -74,7 +74,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         // User signed out - clear local state
         console.log('[Auth Context] SIGNED_OUT event - Clearing user data');
         await clearLocalUserData();
-      } else if (event === 'TOKEN_REFRESHED') {
       }
     });
 

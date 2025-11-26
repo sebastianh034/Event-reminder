@@ -13,8 +13,6 @@ import ArtistFollowButton from '../FollowButton';
 interface ArtistResultCardProps {
   artist: ExtendedArtist;
   onPress: (artist: ExtendedArtist) => void;
-  onFollowPress?: (artistId: number) => void;
-  isFollowed?: boolean;
 }
 
 const ArtistResultCard: React.FC<ArtistResultCardProps> = ({

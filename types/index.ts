@@ -15,5 +15,4 @@ export interface Artist {
 export interface ExtendedArtist extends Artist {
   verified?: boolean;
   monthlyListeners?: string;
-  topTracks?: string[];
 }

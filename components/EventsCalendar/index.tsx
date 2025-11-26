@@ -149,11 +149,19 @@ const EventsCalendar: React.FC<EventsCalendarProps> = ({ userId }) => {
     return timeString === 'Invalid Date' ? 'TBA' : timeString;
   };
 
+  const formatStatus = (status: string): string => {
+    // Convert status from database format (on_sale) to display format (On Sale)
+    return status
+      .split('_')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+  };
+
   const renderEventItem = ({ item }: { item: SupabaseEvent }) => (
     <View style={styles.eventItem}>
       <View style={styles.eventHeader}>
         <Text style={styles.artistName}>{item.artist_name}</Text>
-        <Text style={styles.eventStatus}>{item.status}</Text>
+        <Text style={styles.eventStatus}>{formatStatus(item.status)}</Text>
       </View>
       <View style={styles.eventDetails}>
         <Ionicons name="location-outline" size={14} color="#9CA3AF" />

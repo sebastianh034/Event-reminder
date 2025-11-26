@@ -24,7 +24,6 @@ const ArtistSearchPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState<string>(initialQuery);
   const [searchResults, setSearchResults] = useState<ExtendedArtist[]>([]);
   const [isSearching, setIsSearching] = useState<boolean>(false);
-  const [followedArtists, setFollowedArtists] = useState<Set<number>>(new Set());
 
   const handleSearch = async (query: string) => {
     if (!query.trim()) {
@@ -51,8 +50,6 @@ const ArtistSearchPage: React.FC = () => {
         popularity: spotifyArtist.popularity,
         bio: `${spotifyArtist.name} is a popular artist on Spotify with ${spotifyArtist.followers.total.toLocaleString()} followers.`,
         monthlyListeners: spotifyArtist.followers.total.toLocaleString(),
-        topTracks: [],
-        upcomingEvents: [],
       }));
 
       setSearchResults(results);
@@ -62,16 +59,6 @@ const ArtistSearchPage: React.FC = () => {
     } finally {
       setIsSearching(false);
     }
-  };
-
-  const toggleFollow = (artistId: number) => {
-    const newFollowed = new Set(followedArtists);
-    if (newFollowed.has(artistId)) {
-      newFollowed.delete(artistId);
-    } else {
-      newFollowed.add(artistId);
-    }
-    setFollowedArtists(newFollowed);
   };
 
   const handleArtistPress = (artist: ExtendedArtist) => {
@@ -126,9 +113,7 @@ const ArtistSearchPage: React.FC = () => {
             <SearchResultsContainer>
               <SearchResultsSection
                 searchResults={searchResults}
-                followedArtists={followedArtists}
                 onArtistPress={handleArtistPress}
-                onToggleFollow={toggleFollow}
                 isSearching={isSearching}
               />
             </SearchResultsContainer>

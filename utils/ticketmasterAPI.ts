@@ -3,9 +3,32 @@
  * Handles fetching artist (attraction) data and events from Ticketmaster
  */
 
-import { getConfigValue } from './spotifyConfig';
+import { supabase } from './supabase';
 
 const TICKETMASTER_API_BASE = 'https://app.ticketmaster.com/discovery/v2';
+
+/**
+ * Get a config value from Supabase app_config table
+ */
+async function getConfigValue(key: string): Promise<string | null> {
+  try {
+    const { data, error } = await supabase
+      .from('app_config')
+      .select('value')
+      .eq('key', key)
+      .single();
+
+    if (error) {
+      console.error(`Error fetching config value for ${key}:`, error);
+      return null;
+    }
+
+    return data?.value || null;
+  } catch (error) {
+    console.error(`Exception fetching config value for ${key}:`, error);
+    return null;
+  }
+}
 
 /**
  * Get Ticketmaster API key from Supabase config
