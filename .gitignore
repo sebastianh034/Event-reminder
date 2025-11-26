@@ -44,3 +44,6 @@ app-example
 
 # Ignore README for now
 TODO.md
+
+# Store Assets (tracked separately)
+store-assets/
