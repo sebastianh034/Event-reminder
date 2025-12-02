@@ -79,7 +79,7 @@ async function handleNotificationNavigation(data: any) {
 }
 
 export default function RootLayout() {
-  const responseListener = useRef<ReturnType<typeof Notifications.addNotificationResponseReceivedListener>>();
+  const responseListener = useRef<ReturnType<typeof Notifications.addNotificationResponseReceivedListener> | null>(null);
 
   useEffect(() => {
     // Configure Google Sign-In on app initialization
@@ -122,6 +122,14 @@ export default function RootLayout() {
               <Stack.Screen name="profile" options={{ headerShown: false }} />
               <Stack.Screen name="settings" options={{ headerShown: false }} />
               <Stack.Screen name="editprofile" options={{ headerShown: false }} />
+              <Stack.Screen
+                name="oauth/callback"
+                options={{
+                  headerShown: false,
+                  presentation: 'transparentModal',
+                  animation: 'none',
+                }}
+              />
             </Stack>
           </LocationProvider>
         </NotificationProvider>
