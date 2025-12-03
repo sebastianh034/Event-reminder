@@ -13,20 +13,13 @@ interface NotificationContextType {
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
 
 export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const { user } = useAuth();
 
   // Load notification preference on mount
   useEffect(() => {
     loadNotificationPreference();
   }, []);
-
-  // Setup push notifications when user signs in
-  useEffect(() => {
-    if (user?.id && notificationsEnabled) {
-      setupPushNotifications(user.id);
-    }
-  }, [user?.id, notificationsEnabled]);
 
   const loadNotificationPreference = async () => {
     try {

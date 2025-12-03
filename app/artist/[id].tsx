@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   View,
   StyleSheet,
@@ -16,116 +16,32 @@ import PastEventsSection from '../../components/ArtistPage/PastEventsSection';
 import DistanceFilter from '../../components/ArtistPage/DistanceFilter';
 import { useLocation } from '../../context/locationContext';
 import { filterEventsByDistance } from '../../utils/distance';
-import {
-  getEventsByArtistName,
-  getPastEventsByArtistName,
-  type Event as SupabaseEvent,
-} from '../../utils/eventsService';
-import { fetchAndSaveArtistEvents } from '../../utils/eventsAPI';
-import { supabase } from '../../utils/supabase';
+import { type Event as SupabaseEvent } from '../../utils/eventsService';
 import { DEFAULT_SEARCH_RADIUS_MILES } from '../../constants';
+import { useArtistEvents } from '../../hooks/useArtistEvents';
 
 export default function ArtistPage() {
   const params = useLocalSearchParams();
   const { id, name, image, followers } = params;
   const [maxDistance, setMaxDistance] = useState(DEFAULT_SEARCH_RADIUS_MILES);
   const { location, locationEnabled, permissionGranted, refreshLocation } = useLocation();
-  const [allEvents, setAllEvents] = useState<SupabaseEvent[]>([]);
-  const [allPastEvents, setAllPastEvents] = useState<SupabaseEvent[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [refreshing, setRefreshing] = useState(false);
 
-  // Create artist object from Spotify data passed through params
-  const artist = {
-    id: 0, // Temporary numeric ID
+  const artist = useMemo(() => ({
+    name: (name as string) || 'Unknown Artist',
+    spotifyId: (id as string) || '',
+    image: (image as string) || 'https://via.placeholder.com/300',
+  }), [name, id, image]);
+
+  const artistForHeader = useMemo(() => ({
+    id: 0,
     spotifyId: (id as string) || '',
     name: (name as string) || 'Unknown Artist',
     image: (image as string) || 'https://via.placeholder.com/300',
     followers: (followers as string) || '0',
-    isFollowing: false, // Will be determined by context in FollowButton
-  };
+    isFollowing: false,
+  }), [id, name, image, followers]);
 
-  // Load events when component mounts
-  useEffect(() => {
-    loadEvents();
-  }, [artist.name]);
-
-  // Note: We don't refresh followed artists here because:
-  // 1. The context already loads on app start
-  // 2. The context updates optimistically when following/unfollowing
-  // 3. Refreshing here would overwrite optimistic updates before the database write completes
-
-  const loadEvents = async () => {
-    if (!artist.name) return;
-
-    setLoading(true);
-    try {
-      // First, try to get events from database
-      let upcomingEvents = await getEventsByArtistName(artist.name, true);
-      let pastEvents = await getPastEventsByArtistName(artist.name);
-
-      // If no upcoming events found, fetch from Ticketmaster
-      if (upcomingEvents.length === 0) {
-
-        // Check if artist exists in database, if not create it
-        const { data: existingArtist } = await supabase
-          .from('artists')
-          .select('id, ticketmaster_id')
-          .eq('name', artist.name)
-          .single();
-
-        let artistDbId = existingArtist?.id;
-
-        // If artist doesn't exist, create it
-        if (!artistDbId) {
-          const { data: newArtist } = await supabase
-            .from('artists')
-            .insert({
-              name: artist.name,
-              spotify_id: artist.spotifyId,
-              image_url: artist.image,
-            })
-            .select('id')
-            .single();
-          artistDbId = newArtist?.id;
-        }
-
-        // Fetch events from Ticketmaster
-        if (artistDbId) {
-          const result = await fetchAndSaveArtistEvents(
-            artistDbId,
-            artist.name,
-            existingArtist?.ticketmaster_id
-          );
-
-          // Update artist with Ticketmaster ID if we got one
-          if (result.ticketmasterId && !existingArtist?.ticketmaster_id) {
-            await supabase
-              .from('artists')
-              .update({ ticketmaster_id: result.ticketmasterId })
-              .eq('id', artistDbId);
-          }
-
-          // Fetch the newly saved events
-          upcomingEvents = await getEventsByArtistName(artist.name, true);
-          pastEvents = await getPastEventsByArtistName(artist.name);
-        }
-      }
-
-      setAllEvents(upcomingEvents);
-      setAllPastEvents(pastEvents);
-    } catch (error) {
-      console.error('Error loading events:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const onRefresh = async () => {
-    setRefreshing(true);
-    await loadEvents();
-    setRefreshing(false);
-  };
+  const { allEvents, allPastEvents, loading, refreshing, refreshEvents } = useArtistEvents(artist);
 
   // Filter events by distance if location is available and enabled
   const { nearbyEvents, farAwayEvents } = useMemo(() => {
@@ -161,12 +77,12 @@ export default function ArtistPage() {
             refreshControl={
               <RefreshControl
                 refreshing={refreshing}
-                onRefresh={onRefresh}
+                onRefresh={refreshEvents}
                 tintColor="#ffffff"
               />
             }
           >
-            <ArtistHeader artist={artist} isUserSignedIn={true} />
+            <ArtistHeader artist={artistForHeader} isUserSignedIn={true} />
 
             <DistanceFilter
               distance={maxDistance}

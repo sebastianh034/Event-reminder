@@ -26,6 +26,7 @@ import {
 import * as Location from 'expo-location';
 import { useLocation } from '../context/locationContext';
 import { useNotifications } from '../context/notificationContext';
+import { useFormData } from '../hooks/useFormData';
 
 const SignIn: React.FC = () => {
   const { signIn } = useAuth();
@@ -35,7 +36,7 @@ const SignIn: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [biometricAvailable, setBiometricAvailable] = useState(false);
   const [biometricType, setBiometricType] = useState('');
-  const [formData, setFormData] = useState({
+  const { formData, handleChange, resetForm, updateFields } = useFormData({
     email: '',
     password: '',
     confirmPassword: '',
@@ -113,11 +114,10 @@ const SignIn: React.FC = () => {
 
       if (credentials) {
         // Auto-fill and sign in
-        setFormData(prev => ({
-          ...prev,
+        updateFields({
           email: credentials.email,
           password: credentials.password,
-        }));
+        });
 
         // Sign in automatically
         await performSignIn(credentials.email, credentials.password);
@@ -193,7 +193,7 @@ const SignIn: React.FC = () => {
   };
 
   const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    handleChange(field as keyof typeof formData, value);
   };
 
   const validateForm = (): boolean => {
@@ -224,6 +224,7 @@ const SignIn: React.FC = () => {
     if (!validateForm()) return;
 
     setLoading(true);
+    console.log('[SignIn] Form data:', { email: formData.email, hasPassword: !!formData.password });
     try {
       let result;
 
@@ -300,12 +301,7 @@ const SignIn: React.FC = () => {
 
   const toggleMode = () => {
     setIsSignUp(!isSignUp);
-    setFormData({
-      email: '',
-      password: '',
-      confirmPassword: '',
-      name: '',
-    });
+    resetForm();
   };
 
   const handleGoogleSignIn = async () => {

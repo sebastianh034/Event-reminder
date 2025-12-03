@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import {
   View,
   StyleSheet,
@@ -7,59 +7,20 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router, useLocalSearchParams } from 'expo-router';
-import { searchArtists } from '../utils/spotifyAPI';
 import type { ExtendedArtist } from '../types';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import SearchHeader from '../components/SearchPage/SearchHeader';
 import SearchInput from '../components/SearchPage/SearchInput';
 import SearchResultsContainer from '../components/SearchPage/SearchResultsContainer';
 import SearchResultsSection from '../components/SearchPage/SearchResultsSection';
+import { useArtistSearch } from '../hooks/useArtistSearch';
 
 
 const ArtistSearchPage: React.FC = () => {
-  // Get search params from the URL
   const { query } = useLocalSearchParams();
   const initialQuery = typeof query === 'string' ? query : '';
 
-  const [searchQuery, setSearchQuery] = useState<string>(initialQuery);
-  const [searchResults, setSearchResults] = useState<ExtendedArtist[]>([]);
-  const [isSearching, setIsSearching] = useState<boolean>(false);
-
-  const handleSearch = async (query: string) => {
-    if (!query.trim()) {
-      setSearchResults([]);
-      return;
-    }
-
-    setIsSearching(true);
-
-    try {
-      // Search Spotify for artists
-      const spotifyResults = await searchArtists(query, 10);
-
-      // Convert Spotify artists to ExtendedArtist format
-      const results: ExtendedArtist[] = spotifyResults.map((spotifyArtist, index) => ({
-        id: index + 1000,
-        spotifyId: spotifyArtist.id,
-        name: spotifyArtist.name,
-        genre: spotifyArtist.genres[0] || 'Artist',
-        image: spotifyArtist.images[0]?.url || 'https://via.placeholder.com/300',
-        followers: spotifyArtist.followers.total.toLocaleString(),
-        isFollowing: false,
-        verified: spotifyArtist.popularity > 50,
-        popularity: spotifyArtist.popularity,
-        bio: `${spotifyArtist.name} is a popular artist on Spotify with ${spotifyArtist.followers.total.toLocaleString()} followers.`,
-        monthlyListeners: spotifyArtist.followers.total.toLocaleString(),
-      }));
-
-      setSearchResults(results);
-    } catch (error) {
-      console.error('Error searching artists:', error);
-      setSearchResults([]);
-    } finally {
-      setIsSearching(false);
-    }
-  };
+  const { searchQuery, setSearchQuery, searchResults, isSearching, handleSearch } = useArtistSearch(initialQuery);
 
   const handleArtistPress = (artist: ExtendedArtist) => {
     // Pass artist data through route params

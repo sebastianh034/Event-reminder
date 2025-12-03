@@ -24,7 +24,7 @@
     },
     "android": {
       "package": "com.sebastianh034.eventreminder",
-      "versionCode": 5,
+      "versionCode": 7,
       "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
