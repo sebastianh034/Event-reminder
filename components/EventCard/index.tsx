@@ -58,9 +58,6 @@ const EventCard: React.FC<EventCardProps> = ({ event, onPress, isPastEvent = fal
           <Text style={styles.dateText}>{formattedDate}</Text>
           <Text style={styles.venue}>{event.venue}</Text>
           <Text style={styles.location}>{event.location}</Text>
-          {event.price_range && (
-            <Text style={styles.price}>{event.price_range}</Text>
-          )}
         </View>
 
         {/* Right side - Status Badge and Tickets Button */}
@@ -134,12 +131,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: 'rgba(255, 255, 255, 0.6)',
     marginBottom: 2,
-  },
-  price: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#10B981',
-    marginTop: 2,
   },
   statusBadge: {
     paddingHorizontal: 12,
