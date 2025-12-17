@@ -21,4 +21,4 @@ Apple HIGs:
 
 ## Wireframes
 
-![App Wireframes](Wireframe/Screenshot%202025-12-03%20at%2012.47.15%20PM.png)
+![App Wireframes](Wireframe/Wireframe.png)

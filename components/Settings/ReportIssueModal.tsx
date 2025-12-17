@@ -8,13 +8,13 @@ import {
   ScrollView,
   Pressable,
   Alert,
-  ActivityIndicator,
   Image,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import SwipeToSubmit from './SwipeToSubmit';
 
 interface ReportIssueModalProps {
   visible: boolean;
@@ -39,6 +39,8 @@ const ReportIssueModal: React.FC<ReportIssueModalProps> = ({
   const [description, setDescription] = useState('');
   const [screenshots, setScreenshots] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const isFormValid = title.trim() && name.trim() && description.trim();
 
   const handlePickImage = async () => {
     try {
@@ -237,25 +239,13 @@ const ReportIssueModal: React.FC<ReportIssueModalProps> = ({
                   )}
                 </View>
 
-                {/* Submit Button */}
-                <Pressable
-                  style={({ pressed }) => [
-                    styles.submitButton,
-                    pressed && styles.submitButtonPressed,
-                    isSubmitting && styles.submitButtonDisabled,
-                  ]}
-                  onPress={handleSubmit}
-                  disabled={isSubmitting}
-                >
-                  {isSubmitting ? (
-                    <ActivityIndicator color="#ffffff" />
-                  ) : (
-                    <>
-                      <Ionicons name="send" size={20} color="#ffffff" />
-                      <Text style={styles.submitButtonText}>Submit Report</Text>
-                    </>
-                  )}
-                </Pressable>
+                {/* Hold to Submit */}
+                <SwipeToSubmit
+                  onSubmit={handleSubmit}
+                  disabled={!isFormValid}
+                  isSubmitting={isSubmitting}
+                  text="Hold to Submit"
+                />
               </View>
             </ScrollView>
           </SafeAreaView>

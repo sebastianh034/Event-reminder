@@ -13,13 +13,22 @@ interface NotificationContextType {
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
 
 export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
+  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const { user } = useAuth();
 
   // Load notification preference on mount
   useEffect(() => {
     loadNotificationPreference();
   }, []);
+
+  // Setup push notifications when user signs in
+  useEffect(() => {
+    if (user?.id && notificationsEnabled) {
+      setupPushNotifications(user.id).catch((error) => {
+        console.error('[Notifications] Failed to setup push notifications, but continuing app:', error);
+      });
+    }
+  }, [user?.id, notificationsEnabled]);
 
   const loadNotificationPreference = async () => {
     try {
@@ -54,7 +63,11 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
         // Register push notifications
         if (user?.id) {
-          await setupPushNotifications(user.id);
+          try {
+            await setupPushNotifications(user.id);
+          } catch (error) {
+            console.error('[Notifications] Failed to setup push notifications:', error);
+          }
         }
       } else {
         // User wants to disable notifications
